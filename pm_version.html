@@ -1604,35 +1604,35 @@
 <style>
   :root { --bg1:#3a1018; --bg2:#7a3040; --gold:#d4a843; --gold-light:#f0c96a; --dim:rgba(255,255,255,0.55); --border:rgba(255,255,255,0.09); }
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:'Sarabun',sans-serif; background:linear-gradient(160deg,var(--bg1),var(--bg2)) fixed; color:#fff; padding:1.5rem; line-height:1.5; font-size:16px; }
+  body { font-family:'Sarabun',sans-serif; background:linear-gradient(160deg,var(--bg1),var(--bg2)) fixed; color:#fff; padding:1.5rem; line-height:1.5; font-size:21px; }
   .container { max-width:800px; margin:0 auto; background:rgba(0,0,0,0.25); border:1px solid var(--border); border-radius:16px; padding:1.5rem; }
   .header { border-bottom:1px solid rgba(212,168,67,0.25); padding-bottom:1rem; margin-bottom:1.5rem; text-align:center; }
-  .title { font-family:'Kanit',sans-serif; font-weight:800; font-size:1.4rem; }
+  .title { font-family:'Kanit',sans-serif; font-weight:800; font-size:1.8rem; }
   .title span { color:var(--gold-light); }
-  .subtitle { font-family:'IBM Plex Mono',monospace; font-size:0.75rem; color:var(--gold); letter-spacing:1px; margin-top:5px; }
+  .subtitle { font-family:'IBM Plex Mono',monospace; font-size:1rem; color:var(--gold); letter-spacing:1px; margin-top:5px; }
   
   .member-section { background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.08); border-radius:12px; margin-bottom:1.5rem; overflow:hidden; }
   .mem-header { display:flex; align-items:center; gap:0.8rem; padding:1rem; border-bottom:1px solid rgba(255,255,255,0.05); }
-  .mem-avatar { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Kanit',sans-serif; font-weight:700; font-size:1.2rem; border:2px solid; }
-  .mem-name { font-family:'Kanit',sans-serif; font-weight:700; font-size:1.1rem; flex:1; }
-  .mem-count { font-family:'IBM Plex Mono',monospace; font-size:0.75rem; background:rgba(212,168,67,0.15); color:var(--gold-light); padding:3px 10px; border-radius:100px; }
+  .mem-avatar { width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Kanit',sans-serif; font-weight:700; font-size:1.55rem; border:2px solid; }
+  .mem-name { font-family:'Kanit',sans-serif; font-weight:700; font-size:1.45rem; flex:1; }
+  .mem-count { font-family:'IBM Plex Mono',monospace; font-size:1rem; background:rgba(212,168,67,0.15); color:var(--gold-light); padding:3px 10px; border-radius:100px; }
   
   .task-list { padding:1rem; }
-  .task-item { display:flex; gap:0.6rem; align-items:flex-start; margin-bottom:0.8rem; padding-bottom:0.8rem; border-bottom:1px solid rgba(255,255,255,0.03); }
+  .task-item { display:flex; gap:0.8rem; align-items:flex-start; margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid rgba(255,255,255,0.03); }
   .task-item:last-child { margin-bottom:0; padding-bottom:0; border:none; }
-  .task-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-top:6px; }
-  .task-title { font-weight:600; font-size:0.95rem; }
-  .task-dept { font-size:0.75rem; color:var(--dim); }
-  .task-dates { font-family:'IBM Plex Mono',monospace; font-size:0.65rem; color:rgba(255,255,255,0.4); margin-top:3px; background:rgba(255,255,255,0.05); padding:2px 6px; border-radius:4px; display:inline-block; }
-  .empty-msg { font-size:0.9rem; color:var(--dim); font-style:italic; padding:1rem; text-align:center; }
+  .task-dot { width:13px; height:13px; border-radius:50%; flex-shrink:0; margin-top:8px; }
+  .task-title { font-weight:600; font-size:1.25rem; }
+  .task-dept { font-size:1rem; color:var(--dim); }
+  .task-dates { font-family:'IBM Plex Mono',monospace; font-size:0.85rem; color:rgba(255,255,255,0.4); margin-top:3px; background:rgba(255,255,255,0.05); padding:2px 6px; border-radius:4px; display:inline-block; }
+  .empty-msg { font-size:1.15rem; color:var(--dim); font-style:italic; padding:1rem; text-align:center; }
   
   .gantt-wrapper { margin-top:2rem; overflow-x:auto; border:1px solid var(--border); border-radius:12px; background:rgba(0,0,0,0.3); }
-  .gantt-table { width:100%; border-collapse:collapse; min-width:600px; font-size:0.75rem; }
-  .gantt-table th { padding:8px; font-family:'IBM Plex Mono',monospace; font-size:0.6rem; color:var(--dim); border-bottom:1px solid var(--border); font-weight:400; text-align:center; }
+  .gantt-table { width:100%; border-collapse:collapse; min-width:600px; font-size:1rem; }
+  .gantt-table th { padding:8px; font-family:'IBM Plex Mono',monospace; font-size:0.8rem; color:var(--dim); border-bottom:1px solid var(--border); font-weight:400; text-align:center; }
   .gantt-table th:first-child { text-align:left; position:sticky; left:0; background:var(--bg1); z-index:2; min-width:180px; }
   .gantt-table td { padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.03); }
-  .col-task { padding:6px 10px; position:sticky; left:0; background:rgba(20,5,8,0.95); z-index:1; font-size:0.8rem; }
-  .gbar { height:18px; border-radius:4px; display:flex; align-items:center; padding:0 5px; font-family:'IBM Plex Mono',monospace; font-size:0.55rem; color:#000; font-weight:600; overflow:hidden; }
+  .col-task { padding:6px 10px; position:sticky; left:0; background:rgba(20,5,8,0.95); z-index:1; font-size:1.05rem; }
+  .gbar { height:24px; border-radius:4px; display:flex; align-items:center; padding:0 5px; font-family:'IBM Plex Mono',monospace; font-size:0.75rem; color:#000; font-weight:600; overflow:hidden; }
 </style>
 </head>
 <body>
@@ -1640,7 +1640,7 @@
   <div class="header">
     <div class="title">AI × <span>Logistics Seminar 2026</span></div>
     <div class="subtitle">TASK ASSIGNMENT SUMMARY</div>
-    <div style="font-size:0.8rem;color:var(--dim);margin-top:8px">ข้อมูล ณ วันที่: ${new Date().toLocaleString('th-TH')}</div>
+    <div style="font-size:1.05rem;color:var(--dim);margin-top:8px">ข้อมูล ณ วันที่: ${new Date().toLocaleString('th-TH')}</div>
   </div>`;
 
       // Helper for Gantt
@@ -1707,7 +1707,7 @@
               const leftPct = (daysBetween(col.start, barStart) / colLen) * 100;
               const widthPct = Math.max((overlap / colLen) * 100, 5);
 
-              htmlContent += `<td style="padding:0;position:relative;height:24px;">
+              htmlContent += `<td style="padding:0;position:relative;height:32px;">
                 <div style="position:relative;height:100%">
                   <div class="gbar" style="position:absolute;left:${leftPct}%;width:${widthPct}%;background:${m.color};opacity:0.9"></div>
                 </div>
