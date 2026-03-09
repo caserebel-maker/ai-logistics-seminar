@@ -155,7 +155,6 @@
     /* ── LAYOUT ── */
     .layout {
       display: flex;
-      height: calc(100vh - 54px);
     }
 
     /* LEFT: task list */
@@ -888,39 +887,45 @@
         <div id="barChart"></div>
       </div>
 
-      <!-- GANTT CHART — always visible after bar chart -->
-      <div class="inner" id="ganttSection" style="display:none;padding-bottom:3rem">
-        <div
-          style="border-top:2px solid rgba(212,168,67,0.25);margin:2rem 0 1.5rem;padding-top:1.5rem;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1rem">
-          <div>
-            <div
-              style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:3px;color:var(--gold);margin-bottom:0.3rem">
-              PROJECT TIMELINE</div>
-            <div style="font-family:'Kanit',sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:0.2rem">Gantt
-              Chart — AI × Logistics Seminar 2026</div>
-            <div style="font-size:0.75rem;color:var(--dim)">กดชื่อคนเพื่อ filter เฉพาะงานของคนนั้น · Today = เส้นทอง
-            </div>
-          </div>
-          <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
-            <!-- Person filter -->
-            <div id="ganttPersonFilter" style="display:flex;gap:4px;flex-wrap:wrap"></div>
-            <div style="width:1px;height:24px;background:rgba(255,255,255,0.15)"></div>
-            <!-- View toggle -->
-            <div
-              style="display:flex;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.12);border-radius:100px;padding:3px;gap:2px">
-              <button id="btnMonth" class="gtab active-gtab" onclick="setGanttView('month')">รายเดือน</button>
-              <button id="btnWeek" class="gtab" onclick="setGanttView('week')">รายสัปดาห์</button>
-            </div>
-          </div>
-        </div>
-        <div style="overflow-x:auto;border-radius:12px">
-          <div id="ganttChart" style="min-width:900px"></div>
-        </div>
-      </div>
     </div>
 
     <!-- SIDE: live summary -->
     <div class="side-col" id="sideSummary"></div>
+
+  </div> <!-- End .layout -->
+
+  <!-- GANTT CHART — full width below layout -->
+  <div id="ganttSection" style="display:none;padding:2rem 3rem 4rem;background:var(--bg1)">
+    <div
+      style="border-top:2px solid rgba(212,168,67,0.25);margin-bottom:1.5rem;padding-top:1.5rem;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+      <div>
+        <div
+          style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:3px;color:var(--gold);margin-bottom:0.3rem">
+          PROJECT TIMELINE</div>
+        <div style="font-family:'Kanit',sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:0.2rem">Gantt
+          Chart — AI × Logistics Seminar 2026</div>
+        <div style="font-size:0.75rem;color:var(--dim)">กดชื่อคนเพื่อ filter เฉพาะงานของคนนั้น · Today = เส้นทอง
+        </div>
+      </div>
+      <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
+        <!-- Person filter -->
+        <div id="ganttPersonFilter" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+        <div style="width:1px;height:24px;background:rgba(255,255,255,0.15)"></div>
+        <!-- View toggle -->
+        <div
+          style="display:flex;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.12);border-radius:100px;padding:3px;gap:2px">
+          <button id="btnMonth" class="gtab active-gtab" onclick="setGanttView('month')">รายเดือน</button>
+          <button id="btnWeek" class="gtab" onclick="setGanttView('week')">รายสัปดาห์</button>
+        </div>
+      </div>
+    </div>
+    <div style="overflow-x:auto;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.3)">
+      <div id="ganttChart" style="min-width:1200px"></div>
+    </div>
+  </div>
+
+  <!-- SIDE: live summary -->
+  <div class="side-col" id="sideSummary"></div>
 
   </div>
 
@@ -1377,7 +1382,15 @@
         renderChart();
         if (assigned === total && chartSection.dataset.scrolled !== '1') {
           chartSection.dataset.scrolled = '1';
-          setTimeout(() => chartSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+          // Find Gantt section and scroll to it instead of the bar chart inside the scrolling div
+          setTimeout(() => {
+            const ganttObj = document.getElementById('ganttSection');
+            if (ganttObj && ganttObj.style.display !== 'none') {
+              ganttObj.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+              chartSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }, 300);
         }
       } else {
         chartSection.style.display = 'none';
