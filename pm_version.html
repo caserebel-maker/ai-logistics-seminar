@@ -162,7 +162,7 @@
     .main-col {
       flex: 1;
       overflow-y: auto;
-      padding: 1.5rem 2rem;
+      padding: 1.5rem 3rem;
     }
 
     .main-col::-webkit-scrollbar {
@@ -175,20 +175,26 @@
     }
 
     .inner {
-      max-width: 860px;
-      margin: 0 auto;
+      max-width: 1000px;
+      margin: 0;
     }
 
     /* RIGHT: summary */
     .side-col {
-      width: 280px;
+      width: 480px;
       flex-shrink: 0;
       background: rgba(0, 0, 0, 0.3);
       border-left: 1px solid var(--border);
       overflow-y: auto;
-      padding: 1.2rem;
+      padding: 1.5rem;
       display: flex;
       flex-direction: column;
+      gap: 0.8rem;
+    }
+
+    .live-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 0.8rem;
     }
 
@@ -1390,6 +1396,7 @@
 
     function renderSide() {
       let html = `<div class="side-title">👥 สรุปแบบ Live</div>`;
+      html += `<div class="live-grid">`;
       MEMBERS.forEach(m => {
         const myTasks = [];
         DEPTS.forEach(d => d.tasks.forEach(t => {
@@ -1412,6 +1419,7 @@
         }
         html += `</div></div>`;
       });
+      html += `</div>`;
       document.getElementById('sideSummary').innerHTML = html;
     }
 
