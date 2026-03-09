@@ -1568,59 +1568,197 @@
 
       document.getElementById('summaryContent').innerHTML = html;
 
-      // Add export button to modal body (above content)
+      // Add export button with member selector to modal body
       const exportBtn = document.createElement('div');
       exportBtn.style.display = 'flex';
+      exportBtn.style.alignItems = 'center';
+      exportBtn.style.gap = '8px';
       exportBtn.style.justifyContent = 'flex-end';
       exportBtn.style.marginBottom = '1rem';
-      exportBtn.innerHTML = `<button class="btn btn-green" onclick="exportSummaryToText()">💾 Export สรุปงาน (TXT)</button>`;
+
+      let memberOptions = `<option value="all">ส่งออกทุกคน</option>`;
+      MEMBERS.forEach(m => memberOptions += `<option value="${m.name}">เฉพาะ ${m.name}</option>`);
+
+      exportBtn.innerHTML = `
+        <select id="exportMemberSelect" style="background:rgba(0,0,0,0.5);border:1px solid var(--border);color:white;padding:6px 12px;border-radius:100px;font-family:'Sarabun',sans-serif;font-size:0.8rem;outline:none;">
+          ${memberOptions}
+        </select>
+        <button class="btn btn-green" onclick="exportSummaryToHTML()">💾 Export สรุปงาน (HTML)</button>
+      `;
       document.getElementById('summaryContent').prepend(exportBtn);
 
       document.getElementById('summaryModal').style.display = 'block';
     }
 
-    function exportSummaryToText() {
-      let text = `AI × Logistics Seminar 2026 — สรุปการมอบหมายงาน\n`;
-      text += `วันที่: ${new Date().toLocaleString('th-TH')}\n`;
-      text += `--------------------------------------------------\n\n`;
+    function exportSummaryToHTML() {
+      const selectedMember = document.getElementById('exportMemberSelect').value;
+      const membersToExport = selectedMember === 'all' ? MEMBERS : MEMBERS.filter(m => m.name === selectedMember);
 
-      MEMBERS.forEach(m => {
+      let htmlContent = `<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI × Logistics Seminar 2026 — Task Summary</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root { --bg1:#3a1018; --bg2:#7a3040; --gold:#d4a843; --gold-light:#f0c96a; --dim:rgba(255,255,255,0.55); --border:rgba(255,255,255,0.09); }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Sarabun',sans-serif; background:linear-gradient(160deg,var(--bg1),var(--bg2)) fixed; color:#fff; padding:1.5rem; line-height:1.5; font-size:16px; }
+  .container { max-width:800px; margin:0 auto; background:rgba(0,0,0,0.25); border:1px solid var(--border); border-radius:16px; padding:1.5rem; }
+  .header { border-bottom:1px solid rgba(212,168,67,0.25); padding-bottom:1rem; margin-bottom:1.5rem; text-align:center; }
+  .title { font-family:'Kanit',sans-serif; font-weight:800; font-size:1.4rem; }
+  .title span { color:var(--gold-light); }
+  .subtitle { font-family:'IBM Plex Mono',monospace; font-size:0.75rem; color:var(--gold); letter-spacing:1px; margin-top:5px; }
+  
+  .member-section { background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.08); border-radius:12px; margin-bottom:1.5rem; overflow:hidden; }
+  .mem-header { display:flex; align-items:center; gap:0.8rem; padding:1rem; border-bottom:1px solid rgba(255,255,255,0.05); }
+  .mem-avatar { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Kanit',sans-serif; font-weight:700; font-size:1.2rem; border:2px solid; }
+  .mem-name { font-family:'Kanit',sans-serif; font-weight:700; font-size:1.1rem; flex:1; }
+  .mem-count { font-family:'IBM Plex Mono',monospace; font-size:0.75rem; background:rgba(212,168,67,0.15); color:var(--gold-light); padding:3px 10px; border-radius:100px; }
+  
+  .task-list { padding:1rem; }
+  .task-item { display:flex; gap:0.6rem; align-items:flex-start; margin-bottom:0.8rem; padding-bottom:0.8rem; border-bottom:1px solid rgba(255,255,255,0.03); }
+  .task-item:last-child { margin-bottom:0; padding-bottom:0; border:none; }
+  .task-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-top:6px; }
+  .task-title { font-weight:600; font-size:0.95rem; }
+  .task-dept { font-size:0.75rem; color:var(--dim); }
+  .task-dates { font-family:'IBM Plex Mono',monospace; font-size:0.65rem; color:rgba(255,255,255,0.4); margin-top:3px; background:rgba(255,255,255,0.05); padding:2px 6px; border-radius:4px; display:inline-block; }
+  .empty-msg { font-size:0.9rem; color:var(--dim); font-style:italic; padding:1rem; text-align:center; }
+  
+  .gantt-wrapper { margin-top:2rem; overflow-x:auto; border:1px solid var(--border); border-radius:12px; background:rgba(0,0,0,0.3); }
+  .gantt-table { width:100%; border-collapse:collapse; min-width:600px; font-size:0.75rem; }
+  .gantt-table th { padding:8px; font-family:'IBM Plex Mono',monospace; font-size:0.6rem; color:var(--dim); border-bottom:1px solid var(--border); font-weight:400; text-align:center; }
+  .gantt-table th:first-child { text-align:left; position:sticky; left:0; background:var(--bg1); z-index:2; min-width:180px; }
+  .gantt-table td { padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.03); }
+  .col-task { padding:6px 10px; position:sticky; left:0; background:rgba(20,5,8,0.95); z-index:1; font-size:0.8rem; }
+  .gbar { height:18px; border-radius:4px; display:flex; align-items:center; padding:0 5px; font-family:'IBM Plex Mono',monospace; font-size:0.55rem; color:#000; font-weight:600; overflow:hidden; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="title">AI × <span>Logistics Seminar 2026</span></div>
+    <div class="subtitle">TASK ASSIGNMENT SUMMARY</div>
+    <div style="font-size:0.8rem;color:var(--dim);margin-top:8px">ข้อมูล ณ วันที่: ${new Date().toLocaleString('th-TH')}</div>
+  </div>`;
+
+      // Helper for Gantt
+      const cols = buildColumns();
+
+      membersToExport.forEach(m => {
         const myTasks = [];
         DEPTS.forEach(d => d.tasks.forEach(t => {
-          if (assign[t.id].has(m.name)) myTasks.push({ t, dept: d });
+          if (assign[t.id] && assign[t.id].has(m.name)) {
+            // Find start/end from GANTT_TASKS if exists
+            const gt = GANTT_TASKS.find(g => g.id === t.id);
+            myTasks.push({ t, dept: d, start: gt?.start || null, end: gt?.end || null });
+          }
         }));
 
-        text += `[ ${m.name} ] - ${myTasks.length} งาน\n`;
+        htmlContent += `<div class="member-section">
+          <div class="mem-header">
+            <div class="mem-avatar" style="background:${m.bg};border-color:${m.color};color:${m.color}">${m.name.charAt(0)}</div>
+            <div class="mem-name">${m.name}</div>
+            <div class="mem-count">${myTasks.length} งาน</div>
+          </div>
+          <div class="task-list">`;
+
         if (myTasks.length === 0) {
-          text += `  - (ยังไม่ได้รับมอบหมาย)\n`;
-        } else {
-          myTasks.forEach(({ t, dept }) => {
-            text += `  • ${t.t} (${dept.name})\n`;
-          });
+          htmlContent += `<div class="empty-msg">ยังไม่ได้รับมอบหมายงาน</div></div></div>`;
+          return; // skip gantt for this member if no tasks
         }
-        text += `\n`;
+
+        // List View
+        myTasks.forEach(({ t, dept, start, end }) => {
+          htmlContent += `<div class="task-item">
+            <div class="task-dot" style="background:${dept.color}"></div>
+            <div>
+              <div class="task-title">${t.t}</div>
+              <div class="task-dept">${dept.name}</div>
+              ${start ? `<div class="task-dates">${start} → ${end}</div>` : ''}
+            </div>
+          </div>`;
+        });
+        htmlContent += `</div>`; // end task-list
+
+        // Gantt View for this member
+        htmlContent += `<div class="gantt-wrapper">
+          <table class="gantt-table"><thead><tr><th>ชิ้นงาน</th>`;
+
+        cols.forEach(col => {
+          htmlContent += `<th>${col.label}</th>`;
+        });
+        htmlContent += `</tr></thead><tbody>`;
+
+        myTasks.forEach(({ t, start, end, dept }) => {
+          if (!start) return; // skip if no timeline
+          htmlContent += `<tr><td class="col-task">${t.t}</td>`;
+          const tStart = new Date(start);
+          const tEnd = new Date(end);
+
+          cols.forEach(col => {
+            const hasBar = tEnd >= col.start && tStart <= col.end;
+            if (hasBar) {
+              const barStart = clamp(tStart, col.start, col.end);
+              const barEnd = clamp(tEnd, col.start, col.end);
+              const colLen = daysBetween(col.start, col.end) + 1;
+              const overlap = daysBetween(barStart, barEnd) + 1;
+              const leftPct = (daysBetween(col.start, barStart) / colLen) * 100;
+              const widthPct = Math.max((overlap / colLen) * 100, 5);
+
+              htmlContent += `<td style="padding:0;position:relative;height:24px;">
+                <div style="position:relative;height:100%">
+                  <div class="gbar" style="position:absolute;left:${leftPct}%;width:${widthPct}%;background:${m.color};opacity:0.9"></div>
+                </div>
+              </td>`;
+            } else {
+              htmlContent += `<td></td>`;
+            }
+          });
+          htmlContent += `</tr>`;
+        });
+
+        htmlContent += `</tbody></table></div>`; // close gantt
+        htmlContent += `</div>`; // close member-section
       });
 
-      // unassigned section
-      const unassigned = [];
-      DEPTS.forEach(d => d.tasks.forEach(t => {
-        if (assign[t.id].size === 0) unassigned.push({ t, dept: d });
-      }));
+      // Unassigned
+      if (selectedMember === 'all') {
+        const unassigned = [];
+        DEPTS.forEach(d => d.tasks.forEach(t => {
+          if (!assign[t.id] || assign[t.id].size === 0) unassigned.push({ t, dept: d });
+        }));
 
-      if (unassigned.length > 0) {
-        text += `--------------------------------------------------\n`;
-        text += `⚠️ งานที่ยังไม่มีคนรับ (${unassigned.length} งาน):\n`;
-        unassigned.forEach(({ t, dept }) => {
-          text += `  • ${t.t} (${dept.name})\n`;
-        });
-        text += `\n`;
+        if (unassigned.length > 0) {
+          htmlContent += `<div class="member-section" style="border-color:#f4a261">
+            <div class="mem-header" style="border-color:#f4a26133">
+              <div class="mem-avatar" style="border-color:#f4a261;color:#f4a261">⚠️</div>
+              <div class="mem-name" style="color:#f4a261">งานที่ยังไม่มีคนรับ</div>
+              <div class="mem-count" style="background:rgba(244,162,97,0.15);color:#f4a261">${unassigned.length} งาน</div>
+            </div>
+            <div class="task-list">`;
+          unassigned.forEach(({ t, dept }) => {
+            htmlContent += `<div class="task-item">
+              <div class="task-dot" style="background:${dept.color}"></div>
+              <div>
+                <div class="task-title">${t.t}</div>
+                <div class="task-dept">${dept.name}</div>
+              </div>
+            </div>`;
+          });
+          htmlContent += `</div></div>`;
+        }
       }
 
-      const blob = new Blob([text], { type: 'text/plain' });
+      htmlContent += `</div></body></html>`;
+
+      const blob = new Blob([htmlContent], { type: 'text/html' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `AI_Logistics_Assignments_${new Date().toISOString().split('T')[0]}.txt`;
+      const filenameStr = selectedMember === 'all' ? 'Team' : selectedMember;
+      a.download = `PM_Summary_${filenameStr}_${new Date().toISOString().split('T')[0]}.html`;
       a.click();
       URL.revokeObjectURL(url);
     }
