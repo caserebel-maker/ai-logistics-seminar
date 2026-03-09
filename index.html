@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI × Logistics — มอบหมายงาน</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg1: #3a1018;
+  --bg2: #7a3040;
+  --gold: #d4a843;
+  --gold-light: #f0c96a;
+  --surface: rgba(0,0,0,0.25);
+  --border: rgba(255,255,255,0.09);
+  --dim: rgba(255,255,255,0.55);
+  --c-creative:  #c49af0;
+  --c-speaker:   #5edcb0;
+  --c-logistics: #f09060;
+  --c-sales:     #f0d060;
+  --c-meeting:   #70b8e8;
+  --c-venue:     #e090d0;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { font-size: 23.4px; }
+body {
+  font-family: 'Sarabun', sans-serif;
+  background: linear-gradient(160deg, var(--bg1) 0%, var(--bg2) 100%);
+  background-attachment: fixed;
+  color: #fff;
+  min-height: 100vh;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.7rem 2rem;
+  background: rgba(30,6,10,0.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(212,168,67,0.25);
+  gap: 1rem;
+}
+.top-brand { font-family:'Kanit',sans-serif; font-weight:800; font-size:1rem; }
+.top-brand span { color: var(--gold-light); }
+.top-actions { display:flex; gap:0.6rem; align-items:center; }
+
+.btn {
+  font-family:'IBM Plex Mono',monospace; font-size:0.65rem; letter-spacing:0.8px;
+  padding: 6px 16px; border-radius:100px; cursor:pointer; transition: all 0.18s;
+  border: 1px solid;
+}
+.btn-ghost { background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.15); color:rgba(255,255,255,0.7); }
+.btn-ghost:hover { background:rgba(255,255,255,0.12); color:#fff; }
+.btn-gold { background:rgba(212,168,67,0.15); border-color:rgba(212,168,67,0.45); color:var(--gold-light); }
+.btn-gold:hover { background:rgba(212,168,67,0.28); }
+.btn-green { background:rgba(94,220,176,0.15); border-color:rgba(94,220,176,0.45); color:#5edcb0; }
+.btn-green:hover { background:rgba(94,220,176,0.28); }
+
+/* progress bar */
+.progress-wrap {
+  display:flex; align-items:center; gap:0.7rem;
+  font-family:'IBM Plex Mono',monospace; font-size:0.6rem; color:var(--dim);
+}
+.progress-bar { width:120px; height:4px; background:rgba(255,255,255,0.1); border-radius:4px; overflow:hidden; }
+.progress-fill { height:100%; background:var(--gold); border-radius:4px; transition:width 0.3s; }
+
+/* ── LAYOUT ── */
+.layout { display:flex; height:calc(100vh - 54px); }
+
+/* LEFT: task list */
+.main-col {
+  flex:1; overflow-y:auto; padding:1.5rem 2rem;
+}
+.main-col::-webkit-scrollbar { width:4px; }
+.main-col::-webkit-scrollbar-thumb { background:rgba(212,168,67,0.25); border-radius:4px; }
+.inner { max-width:860px; margin:0 auto; }
+
+/* RIGHT: summary */
+.side-col {
+  width:280px; flex-shrink:0;
+  background:rgba(0,0,0,0.3);
+  border-left:1px solid var(--border);
+  overflow-y:auto; padding:1.2rem;
+  display:flex; flex-direction:column; gap:0.8rem;
+}
+.side-col::-webkit-scrollbar { width:3px; }
+.side-col::-webkit-scrollbar-thumb { background:rgba(212,168,67,0.2); border-radius:3px; }
+
+/* ── DEPT GROUP ── */
+.dept-group { margin-bottom:2rem; }
+.dept-header {
+  display:flex; align-items:center; gap:0.6rem;
+  padding:0.5rem 0; margin-bottom:0.8rem;
+  border-bottom: 2px solid;
+  position: sticky; top: -1px;
+  background: linear-gradient(160deg, var(--bg1) 0%, var(--bg2) 100%);
+  z-index: 10;
+  padding-top: 0.8rem;
+}
+.dept-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.dept-name { font-family:'Kanit',sans-serif; font-weight:700; font-size:0.95rem; }
+.dept-progress { margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:0.6rem; color:var(--dim); }
+
+/* ── TASK CARD ── */
+.task-card {
+  background: rgba(0,0,0,0.2);
+  border: 1px solid var(--border);
+  border-radius:12px;
+  margin-bottom:0.7rem;
+  overflow:hidden;
+  transition: border-color 0.2s;
+}
+.task-card.has-assign { border-color: rgba(212,168,67,0.25); }
+
+.task-top {
+  display:flex; align-items:flex-start; gap:0.8rem;
+  padding: 0.8rem 1rem;
+}
+.task-left-bar { width:3px; border-radius:2px; flex-shrink:0; align-self:stretch; margin-top:2px; }
+.task-info { flex:1; }
+.task-title { font-weight:600; font-size:0.9rem; line-height:1.35; margin-bottom:2px; }
+.task-detail { font-size:0.72rem; color:var(--dim); line-height:1.4; }
+.task-assign-count {
+  flex-shrink:0;
+  font-family:'IBM Plex Mono',monospace; font-size:0.58rem;
+  background:rgba(0,0,0,0.3); border:1px solid var(--border);
+  padding:2px 8px; border-radius:100px; color:var(--dim); white-space:nowrap;
+  margin-top:2px;
+}
+.task-assign-count.has-n { background:rgba(212,168,67,0.1); border-color:rgba(212,168,67,0.3); color:var(--gold-light); }
+
+/* member chips row */
+.member-row {
+  display:flex; flex-wrap:wrap; gap:5px;
+  padding: 0 1rem 0.8rem 1rem;
+}
+
+.mem-chip {
+  display:inline-flex; align-items:center; gap:4px;
+  font-family:'Sarabun',sans-serif; font-size:0.72rem; font-weight:500;
+  padding: 4px 10px;
+  border-radius:100px;
+  border: 1.5px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.55);
+  cursor:pointer;
+  transition: all 0.15s;
+  user-select:none;
+}
+.mem-chip:hover { background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.85); border-color:rgba(255,255,255,0.25); }
+.mem-chip.selected {
+  color: #1a0608;
+  font-weight:700;
+  border-color: transparent;
+}
+.mem-chip .check-icon { display:none; font-size:0.65rem; }
+.mem-chip.selected .check-icon { display:inline; }
+
+/* ── SUMMARY SIDEBAR ── */
+.side-title {
+  font-family:'Kanit',sans-serif; font-weight:700; font-size:0.85rem;
+  color:var(--gold-light); padding-bottom:0.5rem;
+  border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:0.3rem;
+}
+.member-summary-card {
+  background:rgba(0,0,0,0.25); border:1px solid var(--border);
+  border-radius:10px; padding:0.7rem 0.8rem; margin-bottom:0.5rem;
+}
+.ms-header { display:flex; align-items:center; gap:0.5rem; margin-bottom:0.35rem; }
+.ms-avatar {
+  width:28px; height:28px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Kanit',sans-serif; font-weight:700; font-size:0.85rem;
+  flex-shrink:0; border:1.5px solid;
+}
+.ms-name { font-family:'Kanit',sans-serif; font-weight:600; font-size:0.82rem; flex:1; }
+.ms-count {
+  font-family:'IBM Plex Mono',monospace; font-size:0.58rem;
+  padding:1px 6px; border-radius:100px; background:rgba(255,255,255,0.08); color:var(--dim);
+}
+.ms-tasks { display:flex; flex-wrap:wrap; gap:3px; }
+.ms-task-tag {
+  font-size:0.62rem; padding:2px 6px; border-radius:5px;
+  background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.65);
+  border:1px solid rgba(255,255,255,0.08);
+  max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.ms-empty { font-size:0.7rem; color:rgba(255,255,255,0.25); font-style:italic; }
+
+/* ── GANTT ── */
+.gtab {
+  font-family:'IBM Plex Mono',monospace; font-size:0.6rem; letter-spacing:0.5px;
+  padding:4px 12px; border-radius:100px; border:none;
+  background:transparent; color:rgba(255,255,255,0.45); cursor:pointer; transition:all 0.15s;
+}
+.gtab.active-gtab { background:rgba(212,168,67,0.2); color:var(--gold-light); }
+.gperson-chip {
+  font-family:'Sarabun',sans-serif; font-size:0.68rem; font-weight:600;
+  padding:3px 10px; border-radius:100px; border:1.5px solid rgba(255,255,255,0.12);
+  background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.5);
+  cursor:pointer; transition:all 0.15s; user-select:none;
+}
+.gperson-chip.gp-active { color:#1a0608; border-color:transparent; font-weight:700; }
+.gantt-table { width:100%; border-collapse:collapse; font-size:0.75rem; }
+.gantt-table th {
+  font-family:'IBM Plex Mono',monospace; font-size:0.55rem; letter-spacing:1px;
+  color:rgba(255,255,255,0.4); font-weight:400; padding:6px 8px;
+  border-bottom:1px solid rgba(255,255,255,0.08); white-space:nowrap;
+  text-align:center; background:rgba(0,0,0,0.25);
+}
+.gantt-table th.col-task { text-align:left; width:220px; position:sticky; left:0; background:rgba(20,5,8,0.97); z-index:5; }
+.gantt-table td { padding:3px 0; border-bottom:1px solid rgba(255,255,255,0.04); vertical-align:middle; }
+.gantt-table td.col-task {
+  padding:5px 10px; position:sticky; left:0; background:rgba(20,5,8,0.95); z-index:4;
+  font-size:0.72rem; line-height:1.35;
+}
+.gantt-table tr:hover td { background:rgba(255,255,255,0.025); }
+.gantt-table tr:hover td.col-task { background:rgba(20,5,8,0.98); }
+.gantt-dept-row td {
+  font-family:'Kanit',sans-serif; font-weight:700; font-size:0.72rem;
+  padding:8px 10px 4px; color:rgba(255,255,255,0.5); background:rgba(0,0,0,0.2);
+}
+.gantt-dept-row td.col-task { background:rgba(10,2,5,0.98); }
+.gbar-cell { padding:3px 2px !important; }
+.gbar {
+  height:18px; border-radius:4px; position:relative;
+  display:flex; align-items:center; padding:0 5px;
+  font-family:'IBM Plex Mono',monospace; font-size:0.5rem; white-space:nowrap;
+  overflow:hidden; transition:opacity 0.2s;
+  cursor:default;
+}
+.gbar:hover { filter:brightness(1.2); }
+.gbar-label { overflow:hidden; text-overflow:ellipsis; color:rgba(0,0,0,0.8); font-weight:600; }
+.today-col { background:rgba(212,168,67,0.08) !important; }
+.today-header { color:var(--gold-light) !important; font-weight:600 !important; }
+.assignees-tag {
+  font-size:0.6rem; color:rgba(255,255,255,0.45);
+  margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+/* ── BAR CHART ── */
+.chart-wrap {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.7rem;
+  height: 220px;
+  padding: 0 0.5rem;
+  position: relative;
+}
+.chart-gridlines {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+  padding-bottom: 36px;
+}
+.chart-gridline {
+  border-top: 1px dashed rgba(255,255,255,0.07);
+  width: 100%;
+  position: relative;
+}
+.chart-gridline-label {
+  position: absolute;
+  right: calc(100% + 6px);
+  top: -8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.55rem;
+  color: rgba(255,255,255,0.25);
+  white-space: nowrap;
+}
+.chart-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  height: 100%;
+}
+.chart-bar-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 1;
+}
+.chart-bar {
+  width: 72%;
+  border-radius: 6px 6px 0 0;
+  transition: height 0.6s cubic-bezier(0.34,1.56,0.64,1);
+  position: relative;
+  min-height: 4px;
+  cursor: default;
+}
+.chart-bar:hover { filter: brightness(1.15); }
+.chart-val {
+  font-family: 'Kanit', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+  transition: all 0.3s;
+}
+.chart-name {
+  font-family: 'Sarabun', sans-serif;
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.7);
+  text-align: center;
+  white-space: nowrap;
+}
+.chart-dept-dots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
+  max-width: 100%;
+  margin-top: 4px;
+}
+.chart-dept-dot { width: 5px; height: 5px; border-radius: 50%; }
+
+/* ── SUMMARY MODAL ── */
+.modal-bg {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.85); z-index:200;
+  overflow-y:auto; padding:2rem 1rem;
+}
+.modal-box {
+  max-width:820px; margin:0 auto;
+  background: linear-gradient(160deg,#2a0c10,#5a2030);
+  border:1px solid rgba(212,168,67,0.25);
+  border-radius:18px; overflow:hidden;
+}
+.modal-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:1.2rem 1.5rem;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+}
+.modal-title { font-family:'Kanit',sans-serif; font-weight:800; font-size:1.1rem; }
+.modal-body { padding:1.5rem; }
+
+/* summary by person */
+.sum-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1rem; }
+.sum-card {
+  background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px; overflow:hidden;
+}
+.sum-card-header {
+  display:flex; align-items:center; gap:0.6rem;
+  padding:0.8rem 1rem; border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.sum-avatar {
+  width:34px; height:34px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Kanit',sans-serif; font-weight:700; font-size:1rem;
+  flex-shrink:0; border:2px solid;
+}
+.sum-name { font-family:'Kanit',sans-serif; font-weight:700; font-size:0.9rem; flex:1; }
+.sum-n { font-family:'IBM Plex Mono',monospace; font-size:0.6rem; color:var(--gold-light); background:rgba(212,168,67,0.12); padding:2px 8px; border-radius:100px; }
+.sum-tasks { padding:0.7rem 1rem; }
+.sum-task-row {
+  display:flex; gap:0.5rem; align-items:flex-start;
+  padding:0.3rem 0; border-bottom:1px solid rgba(255,255,255,0.04); font-size:0.75rem;
+}
+.sum-task-row:last-child { border:none; }
+.sum-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; margin-top:5px; }
+.sum-no-tasks { font-size:0.72rem; color:rgba(255,255,255,0.25); font-style:italic; padding:0.5rem 0; }
+
+/* unassigned warning */
+.unassigned-section { margin-top:1.5rem; }
+.unassigned-title {
+  font-family:'Kanit',sans-serif; font-weight:700; font-size:0.85rem;
+  color:#f09060; margin-bottom:0.7rem; display:flex; align-items:center; gap:0.5rem;
+}
+.unassigned-row {
+  display:flex; align-items:center; gap:0.6rem;
+  padding:0.5rem 0.8rem; background:rgba(240,144,96,0.07);
+  border:1px solid rgba(240,144,96,0.2); border-radius:8px; margin-bottom:0.4rem;
+  font-size:0.78rem;
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="top-brand">AI × <span>Logistics Seminar 2026</span> — มอบหมายงาน</div>
+  <div class="top-actions">
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <span id="progressLabel">0 / 47 งาน</span>
+    </div>
+    <button class="btn btn-ghost" onclick="clearAll()">↺ ล้างทั้งหมด</button>
+    <button class="btn btn-gold" onclick="openAddTask()">+ เพิ่มงาน</button>
+    <button class="btn btn-green" onclick="openSummary()">✓ ดูสรุปผล</button>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- MAIN: tasks -->
+  <div class="main-col">
+    <div class="inner" id="taskList"></div>
+    <!-- BAR CHART — appears when all tasks assigned -->
+    <div class="inner" id="chartSection" style="display:none;padding-bottom:2rem">
+      <div style="border-top:2px solid rgba(212,168,67,0.25);margin:2rem 0 1.5rem;padding-top:1.5rem">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:3px;color:var(--gold);margin-bottom:0.3rem">TEAM WORKLOAD</div>
+        <div style="font-family:'Kanit',sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:0.2rem">จำนวนงานของแต่ละคน</div>
+        <div style="font-size:0.75rem;color:var(--dim)">มอบหมายงานครบ 47 งานแล้ว — ตรวจสอบ workload ของทีม</div>
+      </div>
+      <div id="barChart"></div>
+    </div>
+
+    <!-- GANTT CHART — always visible after bar chart -->
+    <div class="inner" id="ganttSection" style="display:none;padding-bottom:3rem">
+      <div style="border-top:2px solid rgba(212,168,67,0.25);margin:2rem 0 1.5rem;padding-top:1.5rem;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:3px;color:var(--gold);margin-bottom:0.3rem">PROJECT TIMELINE</div>
+          <div style="font-family:'Kanit',sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:0.2rem">Gantt Chart — AI × Logistics Seminar 2026</div>
+          <div style="font-size:0.75rem;color:var(--dim)">กดชื่อคนเพื่อ filter เฉพาะงานของคนนั้น · Today = เส้นทอง</div>
+        </div>
+        <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
+          <!-- Person filter -->
+          <div id="ganttPersonFilter" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+          <div style="width:1px;height:24px;background:rgba(255,255,255,0.15)"></div>
+          <!-- View toggle -->
+          <div style="display:flex;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.12);border-radius:100px;padding:3px;gap:2px">
+            <button id="btnMonth" class="gtab active-gtab" onclick="setGanttView('month')">รายเดือน</button>
+            <button id="btnWeek"  class="gtab" onclick="setGanttView('week')">รายสัปดาห์</button>
+          </div>
+        </div>
+      </div>
+      <div style="overflow-x:auto;border-radius:12px">
+        <div id="ganttChart" style="min-width:900px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDE: live summary -->
+  <div class="side-col" id="sideSummary"></div>
+
+</div>
+
+<!-- ADD TASK MODAL -->
+<div class="modal-bg" id="addTaskModal">
+  <div class="modal-box" style="max-width:500px">
+    <div class="modal-header">
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.55rem;letter-spacing:3px;color:var(--gold);margin-bottom:3px">NEW TASK</div>
+        <div class="modal-title">เพิ่มงานใหม่</div>
+      </div>
+      <button class="btn btn-ghost" onclick="closeAddTask()">✕ ปิด</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:1rem">
+
+      <!-- Task name -->
+      <div>
+        <label style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:6px">ชื่องาน *</label>
+        <input id="newTaskName" type="text" placeholder="เช่น ออกแบบ Email Template..."
+          style="width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px 14px;color:white;font-family:'Sarabun',sans-serif;font-size:0.9rem;outline:none;transition:border-color 0.2s"
+          onfocus="this.style.borderColor='rgba(212,168,67,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'"
+          onkeydown="if(event.key==='Enter')document.getElementById('newTaskDetail').focus()">
+      </div>
+
+      <!-- Detail -->
+      <div>
+        <label style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:6px">รายละเอียด <span style="color:var(--dim)">(ไม่บังคับ)</span></label>
+        <input id="newTaskDetail" type="text" placeholder="เช่น ทำ template HTML สำหรับ newsletter รายเดือน..."
+          style="width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px 14px;color:white;font-family:'Sarabun',sans-serif;font-size:0.9rem;outline:none;transition:border-color 0.2s"
+          onfocus="this.style.borderColor='rgba(212,168,67,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'">
+      </div>
+
+      <!-- Dept -->
+      <div>
+        <label style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:8px">ฝ่ายงาน *</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px" id="deptPicker">
+          <!-- rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Date range -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.7rem">
+        <div>
+          <label style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:6px">วันเริ่ม <span style="color:var(--dim)">(ไม่บังคับ)</span></label>
+          <input id="newTaskStart" type="date" min="2026-03-13" max="2026-06-19"
+            style="width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 10px;color:white;font-family:'IBM Plex Mono',monospace;font-size:0.72rem;outline:none;color-scheme:dark">
+        </div>
+        <div>
+          <label style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:6px">วันสิ้นสุด <span style="color:var(--dim)">(ไม่บังคับ)</span></label>
+          <input id="newTaskEnd" type="date" min="2026-03-13" max="2026-06-20"
+            style="width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 10px;color:white;font-family:'IBM Plex Mono',monospace;font-size:0.72rem;outline:none;color-scheme:dark">
+        </div>
+      </div>
+
+      <!-- error msg -->
+      <div id="addTaskError" style="display:none;background:rgba(240,96,96,0.15);border:1px solid rgba(240,96,96,0.3);border-radius:8px;padding:8px 12px;font-size:0.75rem;color:#f08080"></div>
+
+      <!-- Confirm -->
+      <div style="display:flex;justify-content:flex-end;gap:0.6rem;padding-top:0.3rem">
+        <button class="btn btn-ghost" onclick="closeAddTask()">ยกเลิก</button>
+        <button class="btn btn-gold" onclick="confirmAddTask()">+ เพิ่มงานนี้</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="summaryModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.55rem;letter-spacing:3px;color:var(--gold);margin-bottom:3px">สรุปผลการมอบหมายงาน</div>
+        <div class="modal-title">AI × Logistics Seminar 2026</div>
+      </div>
+      <button class="btn btn-ghost" onclick="closeSummary()">✕ ปิด</button>
+    </div>
+    <div class="modal-body" id="summaryContent"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// TEAM
+// ══════════════════════════════════════
+const MEMBERS = [
+  { name:'มด',   color:'#c49af0', bg:'rgba(124,80,220,0.18)' },
+  { name:'ม๊อด', color:'#5edcb0', bg:'rgba(46,180,138,0.18)' },
+  { name:'จอย',  color:'#f09060', bg:'rgba(220,100,40,0.18)' },
+  { name:'จิม',  color:'#f0d060', bg:'rgba(200,160,20,0.18)' },
+  { name:'จักร', color:'#70b8e8', bg:'rgba(40,140,200,0.18)' },
+  { name:'ปุ๊',  color:'#e090d0', bg:'rgba(180,60,160,0.18)' },
+  { name:'ตี๋',  color:'#80e080', bg:'rgba(40,180,40,0.18)'  },
+  { name:'แอนนี่',color:'#f08080',bg:'rgba(200,40,40,0.18)'  },
+  { name:'ก้อย', color:'#80c8f0', bg:'rgba(20,120,180,0.18)' },
+  { name:'ปุ๋ย', color:'#f0b060', bg:'rgba(200,120,20,0.18)' },
+];
+
+// ══════════════════════════════════════
+// TASKS DATA
+// ══════════════════════════════════════
+const DEPTS = [
+  { id:'creative', name:'Creative & Design', color:'#c49af0',
+    tasks:[
+      {id:'cr1',  t:'Creative Brief + Mood Board',        d:'กำหนด Concept / Color Palette / Font / Tone of Voice'},
+      {id:'cr2',  t:'ตั้งชื่องาน + Tagline',              d:'Present ให้ MD อนุมัติ / Lock ชื่อก่อน Design'},
+      {id:'cr3',  t:'KV (Key Visual) Draft',              d:'ทำ 2–3 Direction นำเสนอให้ทีมเลือก'},
+      {id:'cr4',  t:'KV Final — อนุมัติและ Lock',         d:'Export ทุก Format หลัง Approve'},
+      {id:'cr5',  t:'Landing Page',                       d:'Wireframe + Copy + ปุ่มสมัคร พร้อม Launch 13 เม.ย.'},
+      {id:'cr6',  t:'Facebook Cover + Profile + Template',d:'Template โพสต์ทุก Format: Square / Portrait / Story'},
+      {id:'cr7',  t:'LinkedIn Banner + Profile วิทยากร', d:'Graphic แนะนำวิทยากร 3 ท่าน / Copy ไทย-อังกฤษ'},
+      {id:'cr8',  t:'Content Plan เม.ย. ล่วงหน้า',       d:'วาง Content Calendar / เขียน Copy ล่วงหน้า 50%'},
+      {id:'cr9',  t:'Teaser Content 3 ชุด (Pre-Launch)', d:'Teaser 1–3 ก่อนเปิดขาย Early Bird'},
+      {id:'cr10', t:'Facebook Ads Creative',              d:'ทำ Ad 3–4 แบบ A/B Test / Target ผู้จัดการ + เจ้าของธุรกิจ'},
+      {id:'cr11', t:'Design สิ่งพิมพ์ทั้งหมด',           d:'Banner / Certificate / Name Tag / Handout / Table Number'},
+      {id:'cr12', t:'Content พ.ค. — Push ขายหนัก',      d:'Social Proof / BTS การเตรียมงาน / Urgency'},
+      {id:'cr13', t:'Line OA Broadcasts ทุกชุด',          d:'Reminder 4 ชุด: Early / Program / เตรียมตัว / วันก่อนงาน'},
+      {id:'cr14', t:'Countdown Content 2 สัปดาห์สุดท้าย',d:'โพสต์ทุกวัน Preview หัวข้อ / Quote วิทยากร'},
+      {id:'cr15', t:'Live Content วันงาน',                d:'Caption + Story Template + Hashtag พร้อมใช้ทันที'},
+    ]
+  },
+  { id:'speaker', name:'Speaker & Content', color:'#5edcb0',
+    tasks:[
+      {id:'sp1', t:'ส่ง Brief วิทยากรทั้ง 3 ท่าน',     d:'Outline เนื้อหา / ระยะเวลา / ขอ Bio + รูปภาพ'},
+      {id:'sp2', t:'เซ็นสัญญาวิทยากร',                  d:'ดร.ธรรณพ 25,000 ฿ — เตรียมสัญญาและนัดเซ็น'},
+      {id:'sp3', t:'ส่ง Workshop Blueprint',             d:'Prompt Template + Exercise + ซักซ้อมกับ Facilitator'},
+      {id:'sp4', t:'รับ Presentation Draft + Review',    d:'รับไฟล์ / Review / ส่ง Feedback / ตรวจ Branding'},
+      {id:'sp5', t:'รับ Presentation Final + Lock',      d:'Deadline 13 มิ.ย. / Backup USB + Cloud ทุกไฟล์'},
+      {id:'sp6', t:'เขียน Script พิธีกร',                d:'Opening / Closing / Run of Show ทั้งวัน'},
+    ]
+  },
+  { id:'logistics', name:'Logistics & Production', color:'#f09060',
+    tasks:[
+      {id:'lg1', t:'Book ห้อง S31 อย่างเป็นทางการ',    d:'วางมัดจำ / ขอ Floor Plan / เช็ค WiFi + AV'},
+      {id:'lg2', t:'ออกแบบ Welcome Pack',               d:'กำหนด Item / Quote โรงพิมพ์ 3 เจ้า / ออกแบบถุงผ้า'},
+      {id:'lg3', t:'สั่งพิมพ์ทั้งหมด',                  d:'ส่ง Artwork Final / 100 ชุด + สำรอง ระยะ 2–3 อาทิตย์'},
+      {id:'lg4', t:'รับของพิมพ์ + ตรวจ QC',             d:'ตรวจทุกชิ้น / แจ้งแก้ถ้าผิด / ก่อนงาน 3 สัปดาห์'},
+      {id:'lg5', t:'จัดหาอุปกรณ์ Tech',                 d:'Router WiFi 2 / Extension 25 ชุด / Hotspot 5 / HDMI'},
+      {id:'lg6', t:'Pack Welcome Pack 100 ชุด',         d:'เรียง A–Z / แปะชื่อ / พิมพ์ Certificate / ใส่กล่อง'},
+      {id:'lg7', t:'Setup ห้องงาน 18 มิ.ย.',            d:'ติด Banner / วาง Extension / Setup Router / วางของ'},
+    ]
+  },
+  { id:'sales', name:'Sales & Marketing', color:'#f0d060',
+    tasks:[
+      {id:'sl1', t:'เลือก Platform ขายตั๋ว',            d:'Eventpop / Google Form + Promptpay / ตั้งราคา'},
+      {id:'sl2', t:'Launch Early Bird 3,000 ฿',         d:'13 เม.ย. 09:00 — โพสต์ทุก Channel / ยิง Ads'},
+      {id:'sl3', t:'ปิด Early Bird + เปิด General',     d:'12 พ.ค. — โพสต์ Urgency / Countdown'},
+      {id:'sl4', t:'Corporate Package 4,000 ฿/คน',     d:'เน้น HR/L&D 3+ คน ปิด 9 มิ.ย.'},
+      {id:'sl5', t:'รายงานยอดขายรายสัปดาห์',            d:'Friday Report ทุกศุกร์ตลอด Campaign'},
+    ]
+  },
+  { id:'meeting', name:'การประชุม / Briefing', color:'#70b8e8',
+    tasks:[
+      {id:'mt1', t:'Kick-off Meeting ทุกฝ่าย',          d:'ศุกร์ 13 มี.ค. — วาง Master Timeline / แบ่งหน้าที่'},
+      {id:'mt2', t:'Weekly Meeting ทุกพฤหัส 10:00',     d:'14 ครั้ง ตั้งแต่ 20 มี.ค. — Update + ตัดสินใจ'},
+      {id:'mt3', t:'Briefing ช่างภาพ',                  d:'เสาร์ 19 เม.ย. — Shot List / Style / Deliverable 48 ชม.'},
+      {id:'mt4', t:'Full Team Briefing',                 d:'เสาร์ 14 มิ.ย. ครึ่งวัน — Walk-through Run of Show'},
+      {id:'mt5', t:'จัดทำ Master Timeline',              d:'สร้างและ maintain ตาราง Timeline ทั้งโครงการ'},
+      {id:'mt6', t:'ติดตาม Budget + P&L',               d:'Track ค่าใช้จ่าย / รายงาน MD / Alert เมื่อเกิน Budget'},
+    ]
+  },
+  { id:'venue', name:'Venue & Tech Test', color:'#e090d0',
+    tasks:[
+      {id:'vn1', t:'ประสานงาน S31 — WiFi + AV',        d:'ยืนยัน Device capacity / ขอ Equipment list'},
+      {id:'vn2', t:'Test จอ + เสียง ที่ S31',            d:'เสาร์ 14 มิ.ย. — Laptop / ไมค์ / Router / Extension'},
+      {id:'vn3', t:'Setup Router WiFi + Hotspot',        d:'2 ตัว / Hotspot 5 เครื่อง / Test 90 Device พร้อมกัน'},
+      {id:'vn4', t:'ดูแล Registration Desk',             d:'iPad check-in / Welcome Pack A–Z / QR poster'},
+      {id:'vn5', t:'ดูแลช่างภาพและสื่อ',                d:'Coordinate / Photo delivery 48 ชม. / Highlight VDO'},
+    ]
+  },
+  { id:'mc', name:'พิธีกร / MC', color:'#ffd166',
+    tasks:[
+      {id:'mc1', t:'เตรียม Script พิธีกร + Run of Show',   d:'ศึกษา Agenda / เขียน Script Opening–Closing / ส่งให้ PM Review ก่อน 13 มิ.ย.'},
+      {id:'mc2', t:'ซักซ้อม Rehearsal กับวิทยากร',        d:'18 มิ.ย. ที่ S31 — ซักซ้อม Transition / ช่วงเวลา / Cue เข้า-ออก แต่ละ Session'},
+      {id:'mc3', t:'ดำเนินรายการวันงาน 08:30–17:00',      d:'Opening / แนะนำวิทยากร / เชื่อม Session / Panel Discussion / ปิดงาน / มอบ Certificate'},
+    ]
+  },
+  { id:'sponsor', name:'Sponsorship Liaison', color:'#a8dadc',
+    tasks:[
+      {id:'sp_1', t:'จัดทำ Sponsorship Package + Deck',     d:'ออกแบบ Package Platinum/Gold/Silver / เตรียม Deck นำเสนอ Sponsor'},
+      {id:'sp_2', t:'ติดต่อและเจรจา Sponsor เป้าหมาย',    d:'ส่ง Deck / ติดตาม / ปิดดีล ก่อน 10 พ.ค.'},
+      {id:'sp_3', t:'รวบรวม Logo + ข้อมูล Sponsor',        d:'ขอไฟล์ Logo ความละเอียดสูง / Bio / ส่งให้ทีม Creative ใส่ KV'},
+      {id:'sp_4', t:'ประสานงานวางบูธ Sponsor',             d:'กำหนด Layout บูธ / ส่ง Spec ให้ Sponsor / ยืนยันขนาดและตำแหน่ง'},
+      {id:'sp_5', t:'จัดคิวและเวลา Sponsor ขึ้นพูด',      d:'กำหนด Slot ใน Agenda / แจ้ง Script / ประสาน MC วันงาน'},
+      {id:'sp_6', t:'ดูแล Sponsor วันงาน + ส่ง Thank You', d:'ต้อนรับ Sponsor / ส่ง Report หลังงาน / ขอบคุณเป็นทางการ'},
+    ]
+  },
+  { id:'admin', name:'Customer Support & Admin', color:'#f4a261',
+    tasks:[
+      {id:'ad1', t:'ตั้งระบบตอบ LINE OA',                  d:'ตั้ง Auto-reply / กำหนดคนดูแล / วาง FAQ เรื่องการสมัคร ชำระเงิน'},
+      {id:'ad2', t:'ตอบคำถามลูกค้าตลอด Campaign',          d:'ตอบ LINE / DM Facebook ทุกวันทำการ ภายใน 2 ชม.'},
+      {id:'ad3', t:'จัดทำและส่งใบเสร็จ / ใบกำกับภาษี',    d:'สำหรับลูกค้านิติบุคคล — สำคัญมากสำหรับลดหย่อน 200% / ส่งภายใน 7 วัน'},
+      {id:'ad4', t:'ดูแลระบบลงทะเบียนและฐานข้อมูลผู้สมัคร',d:'Export รายชื่อ / ตรวจ Payment / อัปเดต List ทุกวัน'},
+      {id:'ad5', t:'แจ้ง Reminder ผู้ลงทะเบียนก่อนงาน',   d:'Line Broadcast 3 รอบ: 1 อาทิตย์ / 3 วัน / เช้าวันงาน'},
+    ]
+  },
+  { id:'facilitator', name:'Workshop Facilitators', color:'#b7e4c7',
+    tasks:[
+      {id:'fc1', t:'คัดเลือก Facilitator 4 คน',            d:'เลือกคนที่ใช้ AI และ Gemini เป็น / อธิบายเทคนิคเบื้องต้นได้'},
+      {id:'fc2', t:'เตรียม Facilitator Guide + Cheat Sheet',d:'สรุปขั้นตอน Workshop ทั้งหมด / ปัญหาที่พบบ่อย + วิธีแก้'},
+      {id:'fc3', t:'Briefing Facilitator ก่อนงาน',          d:'18 มิ.ย. — ซักซ้อม Exercise ทุกข้อ / แบ่งโซนโต๊ะรับผิดชอบ'},
+      {id:'fc4', t:'ประจำโต๊ะช่วย Workshop วันงาน',         d:'14:30–16:15 — เดิน 4 คน / โซนละ ~20 คน / ช่วยแก้ปัญหา Tech เบื้องต้น'},
+    ]
+  },
+  { id:'pdpa', name:'PDPA & Media Consent', color:'#cdb4db',
+    tasks:[
+      {id:'pd1', t:'จัดทำ PDPA Notice + Consent Form',      d:'ร่างข้อความแจ้งสิทธิ / ฟอร์มยินยอมถ่ายภาพ-วิดีโอ / ให้ Legal ตรวจ'},
+      {id:'pd2', t:'ออกแบบป้าย PDPA Notice วันงาน',         d:'ป้ายตั้งหน้าห้อง / สไลด์แจ้งก่อนเริ่ม / QR Code Privacy Policy'},
+      {id:'pd3', t:'ดูแลฐานข้อมูลผู้เข้าร่วมให้ถูกกฎหมาย', d:'เก็บเฉพาะข้อมูลที่จำเป็น / กำหนด Access / ทำลายหลังงาน 90 วัน'},
+    ]
+  },
+  { id:'postevent', name:'Post-Event Engagement', color:'#ffb4a2',
+    tasks:[
+      {id:'pe1', t:'ส่งแบบประเมินความพึงพอใจ',              d:'Google Form / ส่งภายใน 2 ชม. หลังปิดงาน / Target: Response rate 60%+'},
+      {id:'pe2', t:'ส่งไฟล์รูปภาพให้ผู้เข้าร่วม',           d:'Google Drive Link / คัดรูปสวย 50+ ใบ / ส่งภายใน 48 ชม. หลังงาน'},
+      {id:'pe3', t:'ส่ง Thank You Note วิทยากรทุกท่าน',      d:'เมล + ของที่ระลึก / ส่งภายในวันจันทร์หลังงาน'},
+      {id:'pe4', t:'ส่ง Thank You + Report ให้ Sponsor',     d:'สรุป Reach / จำนวนผู้เข้าร่วม / รูปบูธ / ส่งภายใน 1 สัปดาห์'},
+      {id:'pe5', t:'สรุป Lessons Learned + AAR ทีมงาน',      d:'ประชุมสรุปงาน ภายใน 1 สัปดาห์ — สิ่งที่ดี / แก้ / ทำต่อ ครั้งหน้า'},
+    ]
+  },
+  { id:'onsite', name:'On-site Coordinator', color:'#90e0ef',
+    tasks:[
+      {id:'oc1', t:'จัดทำ Day-of Timeline ละเอียด',          d:'Timeline ทุก 15 นาที ตั้งแต่ 07:00–18:00 / แจก Walkie-talkie ทีม'},
+      {id:'oc2', t:'ประสานโรงแรม S31 วันงาน',                d:'ติดต่อ Coordinator โรงแรม / ดูแล Catering / แก้ปัญหาเฉพาะหน้า'},
+      {id:'oc3', t:'ควบคุมเวลาและ Flow วันงาน',               d:'สัญญาณ Cue วิทยากร / เตือนเวลา / ประสาน MC ตลอดวัน'},
+    ]
+  },
+  { id:'vip', name:'VIP & Speaker Hospitality', color:'#e9c46a',
+    tasks:[
+      {id:'vp1', t:'วางแผน รับ-ส่ง วิทยากรวันงาน',           d:'ยืนยันเวลา / รถรับ-ส่ง หรือ นัดจอด / ติดต่อล่วงหน้า 3 วัน'},
+      {id:'vp2', t:'เตรียมห้อง Speaker Room + อาหาร',        d:'น้ำ / ขนม / ของว่าง / Charger / ป้ายชื่อ / Wifi Password'},
+      {id:'vp3', t:'ดูแลวิทยากรตลอดวันงาน',                  d:'ประกบ 1 คนต่อ 1 วิทยากร / ตรวจ Slide ก่อนขึ้นพูด / ดูแลทุก Need'},
+    ]
+  },
+];
+
+// ══════════════════════════════════════
+// STATE: assign[taskId] = Set of names
+// ══════════════════════════════════════
+const assign = {};
+DEPTS.forEach(d => d.tasks.forEach(t => { assign[t.id] = new Set(); }));
+
+// ══════════════════════════════════════
+// RENDER TASKS
+// ══════════════════════════════════════
+function render() {
+  const container = document.getElementById('taskList');
+  let html = '';
+
+  DEPTS.forEach(dept => {
+    const assignedCount = dept.tasks.filter(t => assign[t.id].size > 0).length;
+    html += `<div class="dept-group">
+      <div class="dept-header" style="border-color:${dept.color}44">
+        <div class="dept-dot" style="background:${dept.color}"></div>
+        <div class="dept-name" style="color:${dept.color}">${dept.name}</div>
+        <div class="dept-progress">${assignedCount}/${dept.tasks.length} มอบหมายแล้ว</div>
+      </div>`;
+
+    dept.tasks.forEach(task => {
+      const selected = assign[task.id];
+      const hasAny = selected.size > 0;
+
+      html += `<div class="task-card${hasAny?' has-assign':''}" id="card-${task.id}">
+        <div class="task-top">
+          <div class="task-left-bar" style="background:${dept.color}"></div>
+          <div class="task-info">
+            <div class="task-title">${task.t}</div>
+            <div class="task-detail">${task.d}</div>
+          </div>
+          <div class="task-assign-count${hasAny?' has-n':''}">${hasAny ? selected.size+' คน' : '—'}</div>
+        </div>
+        <div class="member-row">`;
+
+      MEMBERS.forEach(m => {
+        const isSel = selected.has(m.name);
+        html += `<span class="mem-chip${isSel?' selected':''}"
+          style="${isSel ? `background:${m.color};color:#1a0608;border-color:${m.color}` : ''}"
+          onclick="toggle('${task.id}','${m.name}')">
+          <span class="check-icon">✓</span>${m.name}
+        </span>`;
+      });
+
+      html += `</div></div>`;
+    });
+
+    html += `</div>`;
+  });
+
+  container.innerHTML = html;
+  updateProgress();
+  renderSide();
+}
+
+// ══════════════════════════════════════
+// TOGGLE
+// ══════════════════════════════════════
+function toggle(taskId, name) {
+  if (assign[taskId].has(name)) assign[taskId].delete(name);
+  else assign[taskId].add(name);
+  render();
+}
+
+// ══════════════════════════════════════
+// BAR CHART
+// ══════════════════════════════════════
+function renderChart() {
+  const chartSection = document.getElementById('chartSection');
+  const chartEl = document.getElementById('barChart');
+
+  // Count tasks per member, also track dept breakdown
+  const counts = {};
+  const deptCounts = {}; // name -> { deptColor: count }
+  MEMBERS.forEach(m => {
+    counts[m.name] = 0;
+    deptCounts[m.name] = {};
+  });
+
+  DEPTS.forEach(d => {
+    d.tasks.forEach(t => {
+      assign[t.id].forEach(name => {
+        counts[name] = (counts[name] || 0) + 1;
+        if (!deptCounts[name][d.color]) deptCounts[name][d.color] = 0;
+        deptCounts[name][d.color]++;
+      });
+    });
+  });
+
+  const max = Math.max(...Object.values(counts), 1);
+  const totalHeight = 160; // px for bar area
+
+  // gridline steps
+  const step = max <= 5 ? 1 : max <= 10 ? 2 : max <= 20 ? 4 : 5;
+  const gridLines = [];
+  for (let v = step; v <= max; v += step) gridLines.push(v);
+
+  let html = `<div class="chart-wrap">
+    <div class="chart-gridlines">`;
+  // render gridlines bottom to top
+  [...gridLines].reverse().forEach(v => {
+    const pct = (v / max) * 100;
+    html += `<div class="chart-gridline" style="margin-bottom:${pct < 100 ? 0 : 0}px">
+      <span class="chart-gridline-label">${v}</span>
+    </div>`;
+  });
+  html += `</div>`;
+
+  MEMBERS.forEach(m => {
+    const count = counts[m.name] || 0;
+    const barH = max > 0 ? Math.round((count / max) * totalHeight) : 0;
+    const depts = Object.entries(deptCounts[m.name] || {});
+
+    html += `<div class="chart-col">
+      <div class="chart-bar-wrap">
+        <div class="chart-val" style="color:${m.color}">${count > 0 ? count : ''}</div>
+        <div class="chart-bar" style="height:${barH}px;background:${m.color};opacity:0.85" title="${m.name}: ${count} งาน"></div>
+      </div>
+      <div class="chart-name">${m.name}</div>
+      <div class="chart-dept-dots">
+        ${depts.map(([color, n]) => Array(n).fill(`<div class="chart-dept-dot" style="background:${color}" title="${n} งาน"></div>`).join('')).join('')}
+      </div>
+    </div>`;
+  });
+
+  html += `</div>`;
+
+  // avg line annotation
+  const totalAssigned = Object.values(counts).reduce((a,b)=>a+b,0);
+  const avg = (totalAssigned / MEMBERS.length).toFixed(1);
+  html += `<div style="margin-top:1rem;display:flex;gap:1.5rem;flex-wrap:wrap;font-size:0.75rem;color:var(--dim)">
+    <span>รวมทั้งหมด <strong style="color:white">${totalAssigned}</strong> task assignments</span>
+    <span>เฉลี่ย <strong style="color:var(--gold-light)">${avg}</strong> งาน/คน</span>
+    <span>สูงสุด <strong style="color:#5edcb0">${max}</strong> งาน</span>
+  </div>
+  <div style="margin-top:0.8rem;display:flex;flex-wrap:wrap;gap:0.5rem">
+    ${DEPTS.map(d=>`<span style="display:flex;align-items:center;gap:4px;font-size:0.68rem;color:var(--dim)"><span style="width:8px;height:8px;border-radius:50%;background:${d.color};display:inline-block"></span>${d.name}</span>`).join('')}
+  </div>`;
+
+  chartEl.innerHTML = html;
+}
+
+// ══════════════════════════════════════
+// PROGRESS
+// ══════════════════════════════════════
+function updateProgress() {
+  let total = 0, assigned = 0;
+  DEPTS.forEach(d => d.tasks.forEach(t => {
+    total++;
+    if (assign[t.id].size > 0) assigned++;
+  }));
+  const pct = Math.round(assigned/total*100);
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('progressLabel').textContent = `${assigned} / ${total} งาน`;
+
+  // Show chart when all assigned
+  const chartSection = document.getElementById('chartSection');
+  if (assigned === total) {
+    chartSection.style.display = 'block';
+    renderChart();
+    if (assigned === total && chartSection.dataset.scrolled !== '1') {
+      chartSection.dataset.scrolled = '1';
+      setTimeout(() => chartSection.scrollIntoView({ behavior:'smooth', block:'start' }), 300);
+    }
+  } else {
+    chartSection.style.display = 'none';
+    chartSection.dataset.scrolled = '';
+  }
+  maybeShowGantt();
+}
+
+// ══════════════════════════════════════
+// SIDE SUMMARY (live)
+// ══════════════════════════════════════
+function getDeptForTask(tid) {
+  return DEPTS.find(d => d.tasks.some(t => t.id === tid));
+}
+function getTask(tid) {
+  for (const d of DEPTS) { const t = d.tasks.find(x => x.id === tid); if(t) return t; }
+}
+
+function renderSide() {
+  let html = `<div class="side-title">👥 สรุปแบบ Live</div>`;
+  MEMBERS.forEach(m => {
+    const myTasks = [];
+    DEPTS.forEach(d => d.tasks.forEach(t => {
+      if (assign[t.id].has(m.name)) myTasks.push({ t, dept:d });
+    }));
+    html += `<div class="member-summary-card">
+      <div class="ms-header">
+        <div class="ms-avatar" style="background:${m.bg};border-color:${m.color};color:${m.color}">${m.name.charAt(0)}</div>
+        <div class="ms-name">${m.name}</div>
+        <div class="ms-count">${myTasks.length}</div>
+      </div>
+      <div class="ms-tasks">`;
+    if (myTasks.length === 0) {
+      html += `<span class="ms-empty">ยังไม่ได้รับงาน</span>`;
+    } else {
+      myTasks.slice(0,4).forEach(({t,dept}) => {
+        html += `<span class="ms-task-tag" style="border-color:${dept.color}33;color:rgba(255,255,255,0.75)">${t.t}</span>`;
+      });
+      if (myTasks.length > 4) html += `<span class="ms-task-tag" style="color:var(--dim)">+${myTasks.length-4} อีก</span>`;
+    }
+    html += `</div></div>`;
+  });
+  document.getElementById('sideSummary').innerHTML = html;
+}
+
+// ══════════════════════════════════════
+// ADD TASK
+// ══════════════════════════════════════
+let selectedDeptForNew = null;
+let customTaskCounter = 0;
+
+function openAddTask() {
+  selectedDeptForNew = null;
+  document.getElementById('newTaskName').value = '';
+  document.getElementById('newTaskDetail').value = '';
+  document.getElementById('newTaskStart').value = '';
+  document.getElementById('newTaskEnd').value = '';
+  document.getElementById('addTaskError').style.display = 'none';
+
+  // render dept picker
+  const picker = document.getElementById('deptPicker');
+  picker.innerHTML = DEPTS.map(d => `
+    <span id="dpick-${d.id}" onclick="pickDept('${d.id}')"
+      style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:100px;border:1.5px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.55);cursor:pointer;font-size:0.75rem;transition:all 0.15s;font-family:'Sarabun',sans-serif">
+      <span style="width:8px;height:8px;border-radius:50%;background:${d.color};display:inline-block"></span>
+      ${d.name}
+    </span>`).join('');
+
+  document.getElementById('addTaskModal').style.display = 'block';
+  setTimeout(() => document.getElementById('newTaskName').focus(), 100);
+}
+
+function pickDept(id) {
+  selectedDeptForNew = id;
+  document.querySelectorAll('[id^="dpick-"]').forEach(el => {
+    el.style.background = '';
+    el.style.borderColor = 'rgba(255,255,255,0.12)';
+    el.style.color = 'rgba(255,255,255,0.55)';
+  });
+  const dept = DEPTS.find(d => d.id === id);
+  const el = document.getElementById('dpick-' + id);
+  el.style.background = dept.color + '25';
+  el.style.borderColor = dept.color;
+  el.style.color = dept.color;
+}
+
+function closeAddTask() {
+  document.getElementById('addTaskModal').style.display = 'none';
+}
+
+function confirmAddTask() {
+  const name   = document.getElementById('newTaskName').value.trim();
+  const detail = document.getElementById('newTaskDetail').value.trim();
+  const start  = document.getElementById('newTaskStart').value;
+  const end    = document.getElementById('newTaskEnd').value;
+  const errEl  = document.getElementById('addTaskError');
+
+  if (!name) {
+    errEl.textContent = 'กรุณาใส่ชื่องานก่อนนะครับ';
+    errEl.style.display = 'block'; return;
+  }
+  if (!selectedDeptForNew) {
+    errEl.textContent = 'กรุณาเลือกฝ่ายงานด้วยครับ';
+    errEl.style.display = 'block'; return;
+  }
+  if (start && end && end < start) {
+    errEl.textContent = 'วันสิ้นสุดต้องไม่มาก่อนวันเริ่มนะครับ';
+    errEl.style.display = 'block'; return;
+  }
+  errEl.style.display = 'none';
+
+  // create new task
+  customTaskCounter++;
+  const newId = 'custom_' + customTaskCounter;
+  const dept  = DEPTS.find(d => d.id === selectedDeptForNew);
+  dept.tasks.push({ id: newId, t: name, d: detail || '—' });
+  assign[newId] = new Set();
+
+  // add to gantt if dates provided
+  if (start) {
+    GANTT_TASKS.push({
+      id: newId, dept: selectedDeptForNew, name,
+      start: start || '2026-03-13',
+      end:   end   || start || '2026-06-19',
+    });
+  }
+
+  closeAddTask();
+  render();
+  renderGantt();
+
+  // scroll to the new task
+  setTimeout(() => {
+    const el = document.getElementById('card-' + newId);
+    if (el) el.scrollIntoView({ behavior:'smooth', block:'center' });
+  }, 200);
+}
+
+// close modals on bg click
+document.getElementById('addTaskModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeAddTask();
+});
+
+// ══════════════════════════════════════
+// FULL SUMMARY MODAL
+// ══════════════════════════════════════
+function openSummary() {
+  let html = `<div class="sum-grid">`;
+
+  MEMBERS.forEach(m => {
+    const myTasks = [];
+    DEPTS.forEach(d => d.tasks.forEach(t => {
+      if (assign[t.id].has(m.name)) myTasks.push({ t, dept:d });
+    }));
+
+    html += `<div class="sum-card">
+      <div class="sum-card-header">
+        <div class="sum-avatar" style="background:${m.bg};border-color:${m.color};color:${m.color}">${m.name.charAt(0)}</div>
+        <div class="sum-name">${m.name}</div>
+        <div class="sum-n">${myTasks.length} งาน</div>
+      </div>
+      <div class="sum-tasks">`;
+
+    if (myTasks.length === 0) {
+      html += `<div class="sum-no-tasks">ยังไม่ได้รับมอบหมาย</div>`;
+    } else {
+      myTasks.forEach(({t, dept}) => {
+        html += `<div class="sum-task-row">
+          <div class="sum-dot" style="background:${dept.color}"></div>
+          <div>${t.t}</div>
+        </div>`;
+      });
+    }
+    html += `</div></div>`;
+  });
+  html += `</div>`;
+
+  // unassigned
+  const unassigned = [];
+  DEPTS.forEach(d => d.tasks.forEach(t => {
+    if (assign[t.id].size === 0) unassigned.push({t,dept:d});
+  }));
+
+  if (unassigned.length > 0) {
+    html += `<div class="unassigned-section">
+      <div class="unassigned-title">⚠️ งานที่ยังไม่มีคนรับ (${unassigned.length} งาน)</div>`;
+    unassigned.forEach(({t,dept}) => {
+      html += `<div class="unassigned-row">
+        <div style="width:8px;height:8px;border-radius:50%;background:${dept.color};flex-shrink:0"></div>
+        <div><strong>${t.t}</strong> <span style="color:var(--dim);font-size:0.7rem">— ${dept.name}</span></div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  document.getElementById('summaryContent').innerHTML = html;
+  document.getElementById('summaryModal').style.display = 'block';
+}
+
+function closeSummary() {
+  document.getElementById('summaryModal').style.display = 'none';
+}
+
+function clearAll() {
+  if (!confirm('ล้างการมอบหมายทั้งหมดใช่ไหม?')) return;
+  DEPTS.forEach(d => d.tasks.forEach(t => { assign[t.id] = new Set(); }));
+  render();
+}
+
+// close modal on bg click
+document.getElementById('summaryModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeSummary();
+});
+
+// ══════════════════════════════════════
+// GANTT CHART
+// ══════════════════════════════════════
+const GANTT_TASKS = [
+  // Creative
+  {id:'cr1',  dept:'creative', name:'Creative Brief + Mood Board',        start:'2026-03-13', end:'2026-03-20'},
+  {id:'cr2',  dept:'creative', name:'ตั้งชื่องาน + Tagline',              start:'2026-03-16', end:'2026-03-27'},
+  {id:'cr3',  dept:'creative', name:'KV Draft',                           start:'2026-03-22', end:'2026-04-01'},
+  {id:'cr4',  dept:'creative', name:'KV Final — Lock',                    start:'2026-04-01', end:'2026-04-03'},
+  {id:'cr5',  dept:'creative', name:'Landing Page',                       start:'2026-03-27', end:'2026-04-13'},
+  {id:'cr6',  dept:'creative', name:'Facebook Cover + Template',          start:'2026-03-29', end:'2026-04-07'},
+  {id:'cr7',  dept:'creative', name:'LinkedIn Banner + Profile',          start:'2026-03-29', end:'2026-04-07'},
+  {id:'cr8',  dept:'creative', name:'Content Plan เม.ย.',                 start:'2026-04-05', end:'2026-04-13'},
+  {id:'cr9',  dept:'creative', name:'Teaser Content 3 ชุด',               start:'2026-04-10', end:'2026-04-13'},
+  {id:'cr10', dept:'creative', name:'Facebook Ads Creative',              start:'2026-04-17', end:'2026-05-10'},
+  {id:'cr11', dept:'creative', name:'Design สิ่งพิมพ์',                   start:'2026-04-24', end:'2026-05-10'},
+  {id:'cr12', dept:'creative', name:'Content พ.ค. — Push ขาย',           start:'2026-05-10', end:'2026-06-05'},
+  {id:'cr13', dept:'creative', name:'Line OA Broadcasts',                 start:'2026-05-29', end:'2026-06-12'},
+  {id:'cr14', dept:'creative', name:'Countdown Content',                  start:'2026-06-05', end:'2026-06-18'},
+  {id:'cr15', dept:'creative', name:'Live Content วันงาน',                start:'2026-06-18', end:'2026-06-19'},
+  // Speaker
+  {id:'sp1',  dept:'speaker',  name:'ส่ง Brief วิทยากร',                  start:'2026-03-13', end:'2026-03-20'},
+  {id:'sp2',  dept:'speaker',  name:'เซ็นสัญญา ดร.ธรรณพ',                start:'2026-03-20', end:'2026-03-27'},
+  {id:'sp3',  dept:'speaker',  name:'Workshop Blueprint',                 start:'2026-04-17', end:'2026-04-30'},
+  {id:'sp4',  dept:'speaker',  name:'รับ Presentation Draft',             start:'2026-05-10', end:'2026-05-24'},
+  {id:'sp5',  dept:'speaker',  name:'Presentation Final + Lock',          start:'2026-06-07', end:'2026-06-13'},
+  {id:'sp6',  dept:'speaker',  name:'Script พิธีกร',                      start:'2026-06-07', end:'2026-06-14'},
+  // Logistics
+  {id:'lg1',  dept:'logistics',name:'Book ห้อง S31',                      start:'2026-03-13', end:'2026-03-20'},
+  {id:'lg2',  dept:'logistics',name:'ออกแบบ Welcome Pack',                start:'2026-04-10', end:'2026-04-24'},
+  {id:'lg3',  dept:'logistics',name:'สั่งพิมพ์',                           start:'2026-04-24', end:'2026-05-10'},
+  {id:'lg4',  dept:'logistics',name:'รับของ + QC',                        start:'2026-05-10', end:'2026-05-22'},
+  {id:'lg5',  dept:'logistics',name:'จัดหาอุปกรณ์ Tech',                  start:'2026-05-15', end:'2026-06-07'},
+  {id:'lg6',  dept:'logistics',name:'Pack Welcome Pack',                  start:'2026-06-16', end:'2026-06-18'},
+  {id:'lg7',  dept:'logistics',name:'Setup ห้องงาน',                      start:'2026-06-18', end:'2026-06-19'},
+  // Sales
+  {id:'sl1',  dept:'sales',    name:'เลือก Platform ขายตั๋ว',             start:'2026-03-22', end:'2026-04-01'},
+  {id:'sl2',  dept:'sales',    name:'Launch Early Bird 3,000 ฿',          start:'2026-04-13', end:'2026-04-13'},
+  {id:'sl3',  dept:'sales',    name:'ปิด Early Bird / เปิด General',      start:'2026-05-12', end:'2026-05-12'},
+  {id:'sl4',  dept:'sales',    name:'Corporate Package',                  start:'2026-04-13', end:'2026-06-09'},
+  {id:'sl5',  dept:'sales',    name:'Report ยอดขายรายสัปดาห์',            start:'2026-04-13', end:'2026-06-19'},
+  // Meeting
+  {id:'mt1',  dept:'meeting',  name:'Kick-off Meeting',                   start:'2026-03-13', end:'2026-03-13'},
+  {id:'mt2',  dept:'meeting',  name:'Weekly Meeting (ทุกพฤหัส)',          start:'2026-03-20', end:'2026-06-18'},
+  {id:'mt3',  dept:'meeting',  name:'Briefing ช่างภาพ',                   start:'2026-04-19', end:'2026-04-19'},
+  {id:'mt4',  dept:'meeting',  name:'Full Team Briefing',                 start:'2026-06-14', end:'2026-06-14'},
+  {id:'mt5',  dept:'meeting',  name:'Master Timeline',                    start:'2026-03-13', end:'2026-06-19'},
+  {id:'mt6',  dept:'meeting',  name:'Budget + P&L',                       start:'2026-03-13', end:'2026-06-19'},
+  // Venue
+  {id:'vn1',  dept:'venue',    name:'ประสานงาน S31',                      start:'2026-03-27', end:'2026-04-07'},
+  {id:'vn2',  dept:'venue',    name:'Test จอ + เสียง',                    start:'2026-06-14', end:'2026-06-14'},
+  {id:'vn3',  dept:'venue',    name:'Setup Router + Hotspot',             start:'2026-06-14', end:'2026-06-19'},
+  {id:'vn4',  dept:'venue',    name:'Registration Desk',                  start:'2026-06-19', end:'2026-06-19'},
+  {id:'vn5',  dept:'venue',    name:'ดูแลช่างภาพ',                        start:'2026-06-19', end:'2026-06-20'},
+  // Content Development
+  {id:'cd1',  dept:'content',  name:'#1 Kickoff — กำหนด Theme & Scope',  start:'2026-03-27', end:'2026-03-27'},
+  {id:'cd2',  dept:'content',  name:'เตรียม Outline แต่ละ Session',       start:'2026-03-28', end:'2026-04-17'},
+  {id:'cd3',  dept:'content',  name:'#2 Review — Outline & Flow',        start:'2026-04-17', end:'2026-04-17'},
+  {id:'cd4',  dept:'content',  name:'พัฒนา Slide Draft + Workshop',       start:'2026-04-18', end:'2026-05-22'},
+  {id:'cd5',  dept:'content',  name:'#3 Slide & Workshop Check',          start:'2026-05-22', end:'2026-05-22'},
+  {id:'cd6',  dept:'content',  name:'ปรับ Slide Final + Lock เนื้อหา',    start:'2026-05-23', end:'2026-06-05'},
+  {id:'cd7',  dept:'content',  name:'#4 Final Sync — Lock ทั้งหมด',       start:'2026-06-05', end:'2026-06-05'},
+  {id:'cd8',  dept:'content',  name:'Dress Rehearsal (Full Run-through)', start:'2026-06-18', end:'2026-06-18'},
+  // MC / พิธีกร
+  {id:'mc1',  dept:'mc',       name:'เตรียม Script + Run of Show',        start:'2026-06-01', end:'2026-06-13'},
+  {id:'mc2',  dept:'mc',       name:'Rehearsal กับวิทยากร ที่ S31',       start:'2026-06-18', end:'2026-06-18'},
+  {id:'mc3',  dept:'mc',       name:'ดำเนินรายการวันงาน 08:30–17:00',     start:'2026-06-19', end:'2026-06-19'},
+];
+
+const DEPT_META = {
+  creative:  { name:'Creative & Design',           color:'#c49af0' },
+  speaker:   { name:'Speaker & Content',            color:'#5edcb0' },
+  logistics: { name:'Logistics & Production',       color:'#f09060' },
+  sales:     { name:'Sales & Marketing',            color:'#f0d060' },
+  meeting:   { name:'การประชุม / Briefing',         color:'#70b8e8' },
+  venue:     { name:'Venue & Tech Test',            color:'#e090d0' },
+  content:   { name:'Content Development (วิทยากร)',color:'#ff9f7f' },
+  mc:        { name:'พิธีกร / MC',                  color:'#ffd166' },
+};
+
+const PROJECT_START = new Date('2026-03-13');
+const PROJECT_END   = new Date('2026-06-20');
+const TODAY         = new Date();
+
+let ganttView        = 'month';  // 'month' | 'week'
+let ganttFilterPerson = null;    // null = all
+
+function setGanttView(v) {
+  ganttView = v;
+  document.getElementById('btnMonth').classList.toggle('active-gtab', v==='month');
+  document.getElementById('btnWeek').classList.toggle('active-gtab', v==='week');
+  renderGantt();
+}
+
+function toggleGanttPerson(name) {
+  ganttFilterPerson = ganttFilterPerson === name ? null : name;
+  document.querySelectorAll('.gperson-chip').forEach(el => {
+    const active = el.dataset.name === ganttFilterPerson;
+    el.classList.toggle('gp-active', active);
+    if (active) { const m = MEMBERS.find(x=>x.name===name); el.style.background=m.color; el.style.borderColor=m.color; }
+    else { el.style.background=''; el.style.borderColor=''; }
+  });
+  renderGantt();
+}
+
+// Build time columns
+function buildColumns() {
+  const cols = [];
+  if (ganttView === 'month') {
+    // month columns Mar–Jun 2026
+    for (let m = 2; m <= 5; m++) {  // 0-indexed months: Mar=2 Jun=5
+      const start = new Date(2026, m, 1);
+      const end   = new Date(2026, m+1, 0); // last day of month
+      const label = start.toLocaleDateString('th-TH',{month:'long'});
+      cols.push({ label, start, end });
+    }
+  } else {
+    // weekly columns: each Mon–Sun
+    let cur = new Date(PROJECT_START);
+    // go back to Monday
+    const day = cur.getDay();
+    cur.setDate(cur.getDate() - (day === 0 ? 6 : day - 1));
+    while (cur <= PROJECT_END) {
+      const wStart = new Date(cur);
+      const wEnd   = new Date(cur); wEnd.setDate(wEnd.getDate()+6);
+      const label  = `${wStart.getDate()}/${wStart.getMonth()+1}`;
+      cols.push({ label, start: wStart, end: wEnd });
+      cur.setDate(cur.getDate()+7);
+    }
+  }
+  return cols;
+}
+
+function daysBetween(a, b) {
+  return Math.round((b - a) / 86400000);
+}
+function totalDays() {
+  return daysBetween(PROJECT_START, PROJECT_END) + 1;
+}
+function clamp(d, lo, hi) {
+  return d < lo ? lo : d > hi ? hi : d;
+}
+
+function renderGantt() {
+  const cols = buildColumns();
+  const total = daysBetween(PROJECT_START, PROJECT_END) + 1;
+
+  // person filter chips
+  const filterEl = document.getElementById('ganttPersonFilter');
+  if (filterEl && filterEl.childElementCount === 0) {
+    filterEl.innerHTML = MEMBERS.map(m => `
+      <span class="gperson-chip" data-name="${m.name}" onclick="toggleGanttPerson('${m.name}')">${m.name}</span>
+    `).join('');
+  }
+
+  // group tasks by dept
+  const deptOrder = ['creative','speaker','content','mc','logistics','sales','meeting','venue'];
+
+  let html = `<table class="gantt-table"><thead><tr>
+    <th class="col-task">งาน</th>`;
+  cols.forEach((col, i) => {
+    const isTodayCol = TODAY >= col.start && TODAY <= col.end;
+    html += `<th class="${isTodayCol?'today-header':''}" style="min-width:${ganttView==='month'?100:52}px">${col.label}${isTodayCol?' ◀':''}  </th>`;
+  });
+  html += `</tr></thead><tbody>`;
+
+  deptOrder.forEach(deptId => {
+    const meta = DEPT_META[deptId];
+    const tasks = GANTT_TASKS.filter(t => t.dept === deptId);
+    const visibleTasks = ganttFilterPerson
+      ? tasks.filter(t => (assign[t.id]||new Set()).has(ganttFilterPerson))
+      : tasks;
+    if (visibleTasks.length === 0) return;
+
+    // dept header row
+    html += `<tr class="gantt-dept-row">
+      <td class="col-task" style="color:${meta.color}">
+        <div style="display:flex;align-items:center;gap:5px">
+          <div style="width:8px;height:8px;border-radius:50%;background:${meta.color}"></div>
+          ${meta.name}
+        </div>
+      </td>`;
+    cols.forEach(() => { html += `<td style="background:rgba(0,0,0,0.1)"></td>`; });
+    html += `</tr>`;
+
+    visibleTasks.forEach(task => {
+      const tStart = new Date(task.start);
+      const tEnd   = new Date(task.end);
+      const assignees = [...(assign[task.id]||new Set())];
+      const assigneeStr = assignees.length > 0 ? assignees.join(', ') : '—';
+
+      html += `<tr>
+        <td class="col-task">
+          <div style="font-size:0.72rem;line-height:1.3">${task.name}</div>
+          <div class="assignees-tag">${assigneeStr}</div>
+        </td>`;
+
+      cols.forEach(col => {
+        const isTodayCol = TODAY >= col.start && TODAY <= col.end;
+        // does bar overlap this col?
+        const barStart = clamp(tStart, col.start, col.end);
+        const barEnd   = clamp(tEnd,   col.start, col.end);
+        const colLen   = daysBetween(col.start, col.end) + 1;
+        const overlap  = daysBetween(barStart, barEnd) + 1;
+        const leftPct  = (daysBetween(col.start, barStart) / colLen) * 100;
+        const widthPct = (overlap / colLen) * 100;
+        const hasBar   = tEnd >= col.start && tStart <= col.end;
+
+        const tdStyle = isTodayCol ? 'background:rgba(212,168,67,0.05)' : '';
+
+        if (hasBar) {
+        const isMilestone = task.name.startsWith('#');
+        const barColor = isMilestone
+          ? '#ff9f7f'
+          : assignees.length === 1
+            ? (MEMBERS.find(m=>m.name===assignees[0])?.color || meta.color)
+            : meta.color;
+        const barStyle = isMilestone
+          ? `background:${barColor};border:2px solid rgba(255,255,255,0.5);opacity:1`
+          : `background:${barColor};opacity:0.82`;
+          html += `<td class="gbar-cell" style="${tdStyle}">
+            <div style="position:relative;height:22px">
+              <div class="gbar"
+                style="position:absolute;left:${leftPct}%;width:${Math.max(widthPct,3)}%;${barStyle}"
+                title="${task.name} | ${task.start} → ${task.end} | ${assigneeStr}">
+                <span class="gbar-label">${widthPct > 20 ? task.name : ''}</span>
+              </div>
+            </div>
+          </td>`;
+        } else {
+          html += `<td style="${tdStyle}"></td>`;
+        }
+      });
+      html += `</tr>`;
+    });
+  });
+
+  // today marker row
+  html += `</tbody></table>`;
+
+  document.getElementById('ganttChart').innerHTML = html;
+}
+
+// Show gantt always after chart section (even before all assigned — show with unassigned state)
+function maybeShowGantt() {
+  const gs = document.getElementById('ganttSection');
+  if (!gs) return;
+  gs.style.display = 'block';
+  renderGantt();
+}
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+render();
+maybeShowGantt();
+</script>
+</body>
+</html>
