@@ -1286,7 +1286,10 @@
         <div class="task-top">
           <div class="task-left-bar" style="background:${dept.color}"></div>
           <div class="task-info">
-            <div class="task-title">${task.t}</div>
+            <div class="task-title" style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem">
+              <span>${task.t}</span>
+              ${task.id.startsWith('custom_') ? `<button class="btn btn-ghost" style="padding: 2px 6px; font-size: 0.5rem; border: 1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.4); border-radius: 4px; line-height: 1;" onclick="deleteCustomTask('${task.id}', event)" title="ลบงานนี้">✕ ลบ</button>` : ''}
+            </div>
             <div class="task-detail">${task.d}</div>
           </div>
           <div class="task-assign-count${hasAny ? ' has-n' : ''}">${hasAny ? selected.size + ' คน' : '—'}</div>
@@ -1876,13 +1879,38 @@
       document.getElementById('summaryModal').style.display = 'none';
     }
 
-    function clearAll() {
-      if (!confirm('ล้างข้อมูลทั้งหมดใช่ไหม?')) return;
-      DEPTS.forEach(d => d.tasks.forEach(t => { assign[t.id] = new Set(); }));
-      customTasks = [];
-      localStorage.removeItem(CUSTOM_TASKS_KEY);
-      saveState();
+    function deleteCustomTask(taskId, event) {
+      if (event) event.stopPropagation(); // prevent clicking anything underneath
+      if (!confirm('ต้องการลบงานนี้ออกจากระบบใช่ไหม? (ข้อมูลงานและการมอบหมายจะหายไป)')) return;
+
+      // 1. Remove from customTasks array
+      customTasks = customTasks.filter(t => t.id !== taskId);
       saveCustomTasks();
+
+      // 2. Remove from DEPTS array
+      DEPTS.forEach(d => {
+        d.tasks = d.tasks.filter(t => t.id !== taskId);
+      });
+
+      // 3. Remove from GANTT_TASKS
+      const gtIdx = GANTT_TASKS.findIndex(gt => gt.id === taskId);
+      if (gtIdx > -1) GANTT_TASKS.splice(gtIdx, 1);
+
+      // 4. Remove assignment state
+      delete assign[taskId];
+      saveState();
+
+      // 5. Re-render
+      render();
+      if (document.getElementById('ganttSection') && document.getElementById('ganttSection').style.display !== 'none') {
+         renderGantt();
+      }
+    }
+
+    function clearAll() {
+      if (!confirm('ล้างการมอบหมายงานทั้งหมดใช่ไหม? (จะไม่ลบงานเสริมที่คุณเพิ่มเอง แต่จะลบชื่อคนที่รับผิดชอบออก)')) return;
+      DEPTS.forEach(d => d.tasks.forEach(t => { assign[t.id] = new Set(); }));
+      saveState();
       render();
     }
 
