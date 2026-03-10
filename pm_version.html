@@ -1204,7 +1204,9 @@
     // STATE: assign[taskId] = Set of names
     // ══════════════════════════════════════
     const STORAGE_KEY = 'ai_logistics_pm_assign_v1';
+    const CUSTOM_TASKS_KEY = 'ai_logistics_pm_custom_v1';
     const assign = {};
+    let customTasks = [];
 
     // Load from localStorage
     function loadState() {
@@ -1215,6 +1217,31 @@
           assign[taskId] = new Set(data[taskId]);
         }
       }
+
+      // Load custom tasks
+      const savedTasks = localStorage.getItem(CUSTOM_TASKS_KEY);
+      if (savedTasks) {
+        customTasks = JSON.parse(savedTasks);
+        customTasks.forEach(task => {
+          const dept = DEPTS.find(d => d.id === task.deptId);
+          if (dept) {
+            if (!dept.tasks.some(t => t.id === task.id)) {
+              dept.tasks.push({ id: task.id, t: task.name, d: task.detail || '—' });
+            }
+          }
+          if (task.start && !GANTT_TASKS.some(gt => gt.id === task.id)) {
+            GANTT_TASKS.push({
+              id: task.id, dept: task.deptId, name: task.name,
+              start: task.start,
+              end: task.end || task.start,
+            });
+          }
+          // Track counter
+          const idNum = parseInt(task.id.split('_')[1]);
+          if (!isNaN(idNum) && idNum > customTaskCounter) customTaskCounter = idNum;
+        });
+      }
+
       // Ensure all tasks have a Set
       DEPTS.forEach(d => d.tasks.forEach(t => {
         if (!assign[t.id]) assign[t.id] = new Set();
@@ -1227,6 +1254,10 @@
         data[taskId] = Array.from(assign[taskId]);
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function saveCustomTasks() {
+      localStorage.setItem(CUSTOM_TASKS_KEY, JSON.stringify(customTasks));
     }
 
     loadState();
@@ -1551,6 +1582,17 @@
       // create new task
       customTaskCounter++;
       const newId = 'custom_' + customTaskCounter;
+      const taskObj = {
+        id: newId,
+        name: name,
+        detail: detail || '—',
+        deptId: selectedDeptForNew,
+        start: start || '',
+        end: end || ''
+      };
+      customTasks.push(taskObj);
+      saveCustomTasks();
+
       const dept = DEPTS.find(d => d.id === selectedDeptForNew);
       dept.tasks.push({ id: newId, t: name, d: detail || '—' });
       assign[newId] = new Set();
@@ -1559,8 +1601,8 @@
       if (start) {
         GANTT_TASKS.push({
           id: newId, dept: selectedDeptForNew, name,
-          start: start || '2026-03-13',
-          end: end || start || '2026-06-19',
+          start: start,
+          end: end || start,
         });
       }
 
@@ -1835,9 +1877,12 @@
     }
 
     function clearAll() {
-      if (!confirm('ล้างการมอบหมายทั้งหมดใช่ไหม?')) return;
+      if (!confirm('ล้างข้อมูลทั้งหมดใช่ไหม?')) return;
       DEPTS.forEach(d => d.tasks.forEach(t => { assign[t.id] = new Set(); }));
+      customTasks = [];
+      localStorage.removeItem(CUSTOM_TASKS_KEY);
       saveState();
+      saveCustomTasks();
       render();
     }
 
