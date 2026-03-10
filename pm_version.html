@@ -876,6 +876,11 @@
 
     <!-- MAIN: tasks -->
     <div class="main-col">
+      <div class="inner" style="margin-bottom: 2rem;">
+        <div style="font-family:'Kanit',sans-serif;font-weight:700;font-size:0.95rem;margin-bottom:0.8rem;color:var(--gold-light)">หมวดหมู่งาน (14 หมวด)</div>
+        <div id="deptNavButtons" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+      </div>
+
       <div class="inner" id="taskList"></div>
       <!-- BAR CHART — appears when all tasks assigned -->
       <div class="inner" id="chartSection" style="display:none;padding-bottom:2rem">
@@ -1235,7 +1240,7 @@
 
       DEPTS.forEach(dept => {
         const assignedCount = dept.tasks.filter(t => assign[t.id].size > 0).length;
-        html += `<div class="dept-group">
+        html += `<div class="dept-group" id="dept-${dept.id}">
       <div class="dept-header" style="border-color:${dept.color}44">
         <div class="dept-dot" style="background:${dept.color}"></div>
         <div class="dept-name" style="color:${dept.color}">${dept.name}</div>
@@ -1275,6 +1280,42 @@
       container.innerHTML = html;
       updateProgress();
       renderSide();
+      renderDeptNav();
+    }
+
+    // ══════════════════════════════════════
+    // DEPT NAVIGATION
+    // ══════════════════════════════════════
+    function renderDeptNav() {
+      const container = document.getElementById('deptNavButtons');
+      if (!container) return;
+      
+      let html = '';
+      DEPTS.forEach(dept => {
+        html += `<button class="btn btn-ghost" style="border-color:${dept.color}44; color:${dept.color}; font-size: 0.72rem; padding: 4px 12px; font-weight: 500;" onclick="scrollToDept('${dept.id}')">${dept.name}</button>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function scrollToDept(deptId) {
+      const el = document.getElementById(`dept-${deptId}`);
+      if (el) {
+        // Scroll considering the sticky header offset
+        const y = el.getBoundingClientRect().top + window.scrollY - 100;
+        window.scrollTo({top: y, behavior: 'smooth'});
+        
+        // Highlight effect
+        const header = el.querySelector('.dept-header');
+        if (header) {
+          const originalBg = header.style.backgroundColor;
+          header.style.transition = 'background-color 0.4s ease';
+          header.style.backgroundColor = 'rgba(212, 168, 67, 0.15)';
+          
+          setTimeout(() => {
+            header.style.backgroundColor = originalBg || 'transparent';
+          }, 800);
+        }
+      }
     }
 
     // ══════════════════════════════════════
