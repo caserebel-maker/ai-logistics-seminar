@@ -877,7 +877,9 @@
     <!-- MAIN: tasks -->
     <div class="main-col">
       <div class="inner" style="margin-bottom: 2rem;">
-        <div style="font-family:'Kanit',sans-serif;font-weight:700;font-size:0.95rem;margin-bottom:0.8rem;color:var(--gold-light)">หมวดหมู่งาน (14 หมวด)</div>
+        <div
+          style="font-family:'Kanit',sans-serif;font-weight:700;font-size:0.95rem;margin-bottom:0.8rem;color:var(--gold-light)">
+          หมวดหมู่งาน (14 หมวด)</div>
         <div id="deptNavButtons" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
       </div>
 
@@ -1105,6 +1107,7 @@
           { id: 'sl3', t: 'ปิด Early Bird + เปิด General', d: '12 พ.ค. — โพสต์ Urgency / Countdown' },
           { id: 'sl4', t: 'Corporate Package 4,000 ฿/คน', d: 'เน้น HR/L&D 3+ คน ปิด 9 มิ.ย.' },
           { id: 'sl5', t: 'รายงานยอดขายรายสัปดาห์', d: 'Friday Report ทุกศุกร์ตลอด Campaign' },
+          { id: 'sl6', t: 'ติดต่อเชิญชวนแขกรับเชิญ/เจ้าของแบรนด์', d: 'ทาบทามคุณรวิศ และ VIP Guests / ประสานงาน / ยืนยันการเข้าร่วม' },
         ]
       },
       {
@@ -1325,7 +1328,7 @@
     function renderDeptNav() {
       const container = document.getElementById('deptNavButtons');
       if (!container) return;
-      
+
       let html = '';
       DEPTS.forEach(dept => {
         html += `<button class="btn btn-ghost" style="border-color:${dept.color}44; color:${dept.color}; font-size: 0.72rem; padding: 4px 12px; font-weight: 500;" onclick="scrollToDept('${dept.id}')">${dept.name}</button>`;
@@ -1338,15 +1341,15 @@
       if (el) {
         // Scroll considering the sticky header offset
         const y = el.getBoundingClientRect().top + window.scrollY - 100;
-        window.scrollTo({top: y, behavior: 'smooth'});
-        
+        window.scrollTo({ top: y, behavior: 'smooth' });
+
         // Highlight effect
         const header = el.querySelector('.dept-header');
         if (header) {
           const originalBg = header.style.backgroundColor;
           header.style.transition = 'background-color 0.4s ease';
           header.style.backgroundColor = 'rgba(212, 168, 67, 0.15)';
-          
+
           setTimeout(() => {
             header.style.backgroundColor = originalBg || 'transparent';
           }, 800);
@@ -1905,7 +1908,7 @@
       // 5. Re-render
       render();
       if (document.getElementById('ganttSection') && document.getElementById('ganttSection').style.display !== 'none') {
-         renderGantt();
+        renderGantt();
       }
     }
 
